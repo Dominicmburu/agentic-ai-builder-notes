@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 1: Meet the AI that reads and writes | Agentic AI Builder</title>
+  <meta name="description" content="Plain-language notes on what an LLM is, the difference between LLM, GPT and ChatGPT, and how APIs and JSON work.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="#quiz">Quiz</a><a href="#glossary">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#autocomplete">You already use it</a></li>
+    <li><a href="#llm">What is an LLM?</a></li>
+    <li><a href="#writing">How it writes</a></li>
+    <li><a href="#limits">It guesses, it does not look up</a></li>
+    <li><a href="#names">LLM, GPT, ChatGPT</a></li>
+    <li><a href="#kinds">Two kinds of models</a></li>
+    <li><a href="#api">What is an API?</a></li>
+    <li><a href="#parts">The four parts</a></li>
+    <li><a href="#json">What is JSON?</a></li>
+    <li><a href="#real">A real request</a></li>
+    <li><a href="#cost">What it costs</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 1 · Lesson 1</p>
+  <h1>Meet the AI that reads and writes</h1>
+  <p class="lead">An introduction to LLMs and APIs, with no technical background needed.</p>
+  <div class="meta">
+    <span class="pill">About 45 minutes to read</span>
+    <span class="pill">No coding required</span>
+    <a class="pill" href="../downloads/Lesson1_Meet_the_AI.pptx">Download the slides</a>
+  </div>
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">An AI like ChatGPT works by guessing what text should come next. A program can talk to it by sending a neat written order, called an API request.</div>
+  <p>That is the whole lesson in two sentences. The rest of this page explains each part slowly, using everyday examples.</p>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Explain what an AI language model does, in your own words.</li>
+    <li>Tell apart three names people mix up: LLM, GPT and ChatGPT.</li>
+    <li>Send a real request to an AI and read the answer.</li>
+  </ul>
+
+  <h2 id="autocomplete">You already use a tiny version of this</h2>
+  <p>Open any messaging app on your phone and type <em>Good morning, how are</em>. Your keyboard suggests the next word: <strong>you</strong>. It has seen millions of messages, so it knows what usually comes next.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison</span>
+    An LLM is like your phone's word suggestions, but supercharged. Instead of one word, it can continue a whole paragraph.
+  </div>
+
+  <div class="demo" id="guesser">
+    <strong>Try it: what would the AI guess next?</strong>
+    <div class="tabs" role="group" aria-label="Pick a sentence start"></div>
+    <div class="sentence" aria-live="polite"></div>
+    <button type="button" id="show-guesses">Show the AI's top guesses</button>
+    <div class="bars"></div>
+    <p class="note">The percentages are made-up examples to show the idea. Real models weigh thousands of possible words in the same way.</p>
+  </div>
+
+  <h2 id="llm">What is an LLM?</h2>
+  <p><strong>LLM</strong> stands for <strong>Large Language Model</strong>. In one sentence:</p>
+  <div class="callout big">A program that has read a huge amount of text and learned to guess what comes next.</div>
+  <div class="cards">
+    <div class="card"><h3>Large</h3><p>It learned from billions of words: books, websites, articles and more.</p></div>
+    <div class="card"><h3>Language</h3><p>Its world is words. It reads, writes and translates.</p></div>
+    <div class="card"><h3>Model</h3><p>A &ldquo;model&rdquo; is a pattern the computer has learned. It is not a person and not a brain.</p></div>
+  </div>
+  <p>Try saying the definition in your own words. A good version: <em>&ldquo;It is a program trained on lots of text to predict what text comes next, and by repeating that it can write sentences, code and answers.&rdquo;</em></p>
+
+  <h2 id="writing">How it writes a whole answer</h2>
+  <p>The AI does not plan a full answer first. It works one small piece at a time:</p>
+  <ol class="steps">
+    <li><strong>Read</strong> everything written so far.</li>
+    <li><strong>Guess</strong> the most likely next piece of text.</li>
+    <li><strong>Add</strong> that piece, then go back to step 1.</li>
+  </ol>
+  <p>It repeats this very fast until the answer is complete. Try the same game yourself: <em>The sun rises in the ...</em> You said &ldquo;east&rdquo; without thinking. The AI does that, millions of times.</p>
+  <div class="callout">
+    <span class="label">A small word you will meet next lesson</span>
+    The &ldquo;pieces&rdquo; are called <strong>tokens</strong>. A token is a chunk of text, often a whole word or part of one. You do not need to know more today.
+  </div>
+
+  <h2 id="limits">It guesses, it does not look up</h2>
+  <p>This is the most important thing to understand. The AI produces text that <em>sounds right</em>. It does not open a book or check a website to confirm.</p>
+  <div class="cards">
+    <div class="card"><h3>It is great at</h3><p>Writing and rewriting, summarising long text, translating, explaining ideas simply.</p></div>
+    <div class="card"><h3>Be careful with</h3><p>Exact facts, numbers, dates, names, quotes and references. It can get them wrong and still sound sure.</p></div>
+  </div>
+  <div class="callout warn">
+    <span class="label">Real-life example</span>
+    Ask an AI for a book that proves a certain point. It may give a title and author that sound perfect but do not exist. When an AI makes something up like this, people call it a <strong>hallucination</strong>.
+  </div>
+  <p><strong>Simple rule for this whole course:</strong> use the AI to help, then check anything important yourself.</p>
+
+  <h2 id="names">LLM, GPT and ChatGPT: three names, one family</h2>
+  <p>People use these words as if they mean the same thing. They do not. Think about cars:</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Name</th><th>What it is</th><th>Car comparison</th></tr></thead>
+    <tbody>
+      <tr><td><strong>LLM</strong></td><td>The whole category of AI language models</td><td>The word &ldquo;car&rdquo;</td></tr>
+      <tr><td><strong>GPT</strong></td><td>One family of LLMs, made by a company called OpenAI</td><td>One car model, like a Corolla</td></tr>
+      <tr><td><strong>ChatGPT</strong></td><td>An app with a chat window, built on GPT models</td><td>The car you actually drive, with seats and a dashboard</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The same pattern is everywhere. <strong>Claude</strong> and <strong>Gemini</strong> are models too, and each has an app you chat with. So when someone says &ldquo;I asked GPT&rdquo;, they usually mean they used the ChatGPT <em>app</em>.</p>
+
+  <h2 id="kinds">Two kinds of models</h2>
+  <div class="cards">
+    <div class="card"><h3>Chat model</h3><p><strong>The quick-answer friend.</strong> Replies straight away. Cheaper and faster.</p><p>Good for: emails, summaries, rewriting, simple questions.</p></div>
+    <div class="card"><h3>Reasoning model</h3><p><strong>The friend who works it out on paper first.</strong> Slower and costs more.</p><p>Good for: puzzles, multi-step maths, planning.</p></div>
+  </div>
+  <div class="callout tip"><span class="label">Tip</span>Start with a chat model. Switch to a reasoning model only if the answers are not good enough.</div>
+
+  <h2 id="api">What is an API?</h2>
+  <p>So far you have used AI by typing into a chat window. But a <em>program</em> cannot type into a window. It needs a way to send questions to the AI and receive answers. That way is called an <strong>API</strong>.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: the restaurant</span>
+    You sit at a table. You do not walk into the kitchen. A <strong>waiter</strong> takes your order to the kitchen and brings the food back. An API is the waiter between your program (you) and the AI (the kitchen).
+  </div>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>In the restaurant</th><th>In the AI world</th></tr></thead>
+    <tbody>
+      <tr><td>You</td><td>Your app or program</td></tr>
+      <tr><td>The waiter</td><td>The API</td></tr>
+      <tr><td>The kitchen</td><td>The AI model</td></tr>
+      <tr><td>Your order</td><td>The request</td></tr>
+      <tr><td>The food that comes back</td><td>The response (the answer)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>What happens when your program orders:</strong></p>
+  <ol class="steps">
+    <li>Your program writes the order as a tidy form (JSON, explained below).</li>
+    <li>It sends the order to the right address, together with your ID card (your key).</li>
+    <li>The service checks your ID card.</li>
+    <li>The AI writes the answer, piece by piece.</li>
+    <li>The answer comes back as another tidy form, and your program reads it.</li>
+  </ol>
+
+  <h2 id="parts">Every order has four parts</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Part</th><th>Plain meaning</th><th>Restaurant comparison</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Endpoint</strong></td><td>The web address you send the order to</td><td>The restaurant's street address</td></tr>
+      <tr><td><strong>Method</strong></td><td>The kind of action. <strong>GET</strong> means &ldquo;give me something&rdquo;. <strong>POST</strong> means &ldquo;here is an order&rdquo;. Talking to an AI uses POST.</td><td>Asking the menu vs placing an order</td></tr>
+      <tr><td><strong>API key</strong></td><td>A secret password that proves it is you and tells them who to bill</td><td>Your ID or membership card</td></tr>
+      <tr><td><strong>Body</strong></td><td>The order itself, written as JSON</td><td>The order slip</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout warn">
+    <span class="label">Protect your key</span>
+    Treat your API key like a bank PIN. Never share it, never post it on social media, and never put it in a file you upload to GitHub. Anyone with your key can spend your account's money.
+  </div>
+
+  <h2 id="json">What is JSON?</h2>
+  <p>JSON is just a tidy way of writing a form so that a computer can read it. Here is a paper form, and the same form in JSON:</p>
+  <div class="cards">
+    <div class="card"><h3>Paper form</h3><p>Name: Wanjiru<br>Drink: tea<br>Sugar: yes</p></div>
+    <div class="card"><h3>JSON</h3>
+<div class="codebox"><pre><code>{
+  "name": "Wanjiru",
+  "drink": "tea",
+  "sugar": true
+}</code></pre></div></div>
+  </div>
+  <p><strong>Four simple rules:</strong></p>
+  <ul>
+    <li>Labels and words go in <strong>double quotes</strong>: <code>"name"</code>.</li>
+    <li>Curly braces <code>{ }</code> wrap the whole form.</li>
+    <li><code>true</code> and <code>false</code> are written in lowercase, with no quotes.</li>
+    <li>Put a comma between items, but <strong>no comma after the last one</strong>.</li>
+  </ul>
+  <p>Most beginner problems with APIs are tiny typing mistakes in JSON, so let's practise.</p>
+
+  <div class="demo">
+    <strong>Fix the JSON</strong>
+    <p style="margin:.4rem 0">Pick a broken example, fix it in the box, then press Check. The computer will tell you if it can read it.</p>
+    <div class="row">
+      <button type="button" class="secondary" data-sample="1">Example 1</button>
+      <button type="button" class="secondary" data-sample="2">Example 2</button>
+      <button type="button" class="secondary" data-sample="3">Example 3</button>
+      <button type="button" class="secondary" data-sample="4">Example 4</button>
+      <button type="button" class="secondary" data-sample="0">Correct one</button>
+    </div>
+    <p id="json-hint" class="note" style="color:var(--muted);font-size:.9rem;margin:.6rem 0"></p>
+    <label for="json-input" class="note" style="display:block;font-size:.85rem;color:var(--muted)">Edit here:</label>
+    <textarea id="json-input" class="jsonbox" spellcheck="false"></textarea>
+    <div class="row"><button type="button" id="json-check">Check my JSON</button></div>
+    <div id="json-result" class="result" role="status" aria-live="polite"></div>
+  </div>
+
+  <h2 id="real">A real request and answer</h2>
+  <p>Now put it together. This is what a program sends to an AI, and what comes back. You do not need to memorise it. Just find <strong>where the question goes</strong> and <strong>where the answer arrives</strong>.</p>
+  <div class="codebox"><div class="caption">What you send</div><pre><code>{
+  "model": "some-ai-model",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain what an API is to a 12-year-old."
+    }
+  ]
+}</code></pre></div>
+  <div class="codebox"><div class="caption">What comes back (shortened)</div><pre><code>{
+  "choices": [
+    {
+      "message": {
+        "content": "An API is like a waiter for apps..."
+      }
+    }
+  ],
+  "usage": {
+    "total_tokens": 50
+  }
+}</code></pre></div>
+  <ul>
+    <li>Your question goes in <code>"content"</code> under <code>"user"</code>.</li>
+    <li>The answer comes back in <code>"content"</code> inside <code>"choices"</code>.</li>
+    <li><code>"usage"</code> counts how much text was used. This is what decides the price.</li>
+  </ul>
+
+  <details>
+    <summary>For the curious: send this request yourself (optional)</summary>
+    <p>You will need a free account at <a href="https://openrouter.ai" target="_blank" rel="noopener">openrouter.ai</a> and an API key. OpenRouter is like a market stall with many different AIs, all reachable with one account and one key. Copy a model name from its models page and replace <code>MODEL_ID</code>.</p>
+    <p><strong>Option 1, no code:</strong> use the chat page on the OpenRouter website. Pick a model, type your question, and read the answer. This is perfectly fine for the exercise below.</p>
+    <p><strong>Option 2, a terminal command</strong> (replace the key and model first):</p>
+    <div class="codebox"><pre><code>curl https://openrouter.ai/api/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_KEY_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "MODEL_ID",
+    "messages": [
+      {"role": "user", "content": "Explain what an API is to a 12-year-old in three sentences."}
+    ]
+  }'</code></pre></div>
+    <p><strong>Option 3, a short Python script</strong> that asks two models the same question and times them. Save your key in an environment variable called <code>OPENROUTER_API_KEY</code> instead of typing it into the file.</p>
+    <div class="codebox"><pre><code>import os
+import time
+import requests
+
+API_KEY = os.environ["OPENROUTER_API_KEY"]
+URL = "https://openrouter.ai/api/v1/chat/completions"
+QUESTION = "Explain what an API is to a 12-year-old in three sentences."
+
+# Copy two model names from openrouter.ai/models
+MODELS = ["MODEL_ID_1", "MODEL_ID_2"]
+
+for model in MODELS:
+    start = time.time()
+    resp = requests.post(
+        URL,
+        headers={"Authorization": f"Bearer {API_KEY}",
+                 "Content-Type": "application/json"},
+        json={"model": model,
+              "messages": [{"role": "user", "content": QUESTION}]},
+        timeout=60,
+    )
+    seconds = time.time() - start
+    data = resp.json()
+    if resp.status_code != 200:
+        print(model, "ERROR", resp.status_code, data)
+        continue
+    print("\n=== " + model + " ===")
+    print(data["choices"][0]["message"]["content"])
+    print(f"time: {seconds:.1f} seconds | text used: {data['usage']['total_tokens']}")</code></pre></div>
+  </details>
+
+  <h2 id="cost">What does it cost?</h2>
+  <div class="cards">
+    <div class="card"><h3>Pay for what you use</h3><p>Like phone airtime. You pay for the amount of text the AI reads and writes. Small per question, but it adds up.</p></div>
+    <div class="card"><h3>Some models are free</h3><p>Free models exist, with limits such as slower speed or a daily cap.</p></div>
+    <div class="card"><h3>One account, many AIs</h3><p>OpenRouter lets you try many models with one account and one key.</p></div>
+  </div>
+  <p>Prices change often, so always check the price shown on the model's page before using it.</p>
+
+  <h2 id="exercise">Your exercise: one question, two AIs</h2>
+  <p>Ask <strong>two different AI models</strong> the same question and compare them. Use this question, or make up your own:</p>
+  <div class="callout">&ldquo;Explain what an API is to a 12-year-old in three sentences.&rdquo;</div>
+  <p>Fill in the table. What you type is saved in this browser only, so you can come back later.</p>
+  <div class="table-scroll">
+  <table class="fill-table">
+    <thead><tr><th></th><th>AI number 1</th><th>AI number 2</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Name of the model</th><td><input name="m1-name" aria-label="AI 1 model name"></td><td><input name="m2-name" aria-label="AI 2 model name"></td></tr>
+      <tr><th scope="row">Its answer, in one sentence</th><td><input name="m1-answer" aria-label="AI 1 answer"></td><td><input name="m2-answer" aria-label="AI 2 answer"></td></tr>
+      <tr><th scope="row">Seconds it took</th><td><input name="m1-time" aria-label="AI 1 seconds"></td><td><input name="m2-time" aria-label="AI 2 seconds"></td></tr>
+      <tr><th scope="row">Cost</th><td><input name="m1-cost" aria-label="AI 1 cost"></td><td><input name="m2-cost" aria-label="AI 2 cost"></td></tr>
+      <tr><th scope="row">Which would you pick, and why?</th><td colspan="2"><input name="pick" aria-label="Your pick and why"></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>There is no single right answer. The point is to notice that different models give different answers, at different speeds and prices.</p>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <p>Errors are normal. They are the computer's way of telling you what to fix.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th><th>What to do</th></tr></thead>
+    <tbody>
+      <tr><td>Error 401</td><td>The key is wrong or missing</td><td>Copy the key again, with no extra spaces</td></tr>
+      <tr><td>Error 402</td><td>The account has no credit for that model</td><td>Choose a free model instead</td></tr>
+      <tr><td>Error 429</td><td>Too many requests too quickly</td><td>Wait a minute, or try a different model</td></tr>
+      <tr><td>A JSON error</td><td>A typo such as a missing quote or an extra comma</td><td>Use the JSON checker above</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What does an LLM do at its core?</p>
+      <div class="opts">
+        <button type="button" class="opt">It looks up the answer in a database of facts</button>
+        <button type="button" class="opt" data-correct>It guesses the most likely next piece of text</button>
+        <button type="button" class="opt">It thinks and feels like a human</button>
+      </div>
+      <p class="why">An LLM predicts likely text, again and again. That is why it can sound right and still be wrong.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. ChatGPT is best described as&hellip;</p>
+      <div class="opts">
+        <button type="button" class="opt">The whole category of AI language models</button>
+        <button type="button" class="opt" data-correct>An app with a chat window, built on GPT models</button>
+        <button type="button" class="opt">A company</button>
+      </div>
+      <p class="why">LLM is the category, GPT is one family of models, and ChatGPT is the app you chat with.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. In the restaurant comparison, what is the API key?</p>
+      <div class="opts">
+        <button type="button" class="opt">The menu</button>
+        <button type="button" class="opt">The kitchen</button>
+        <button type="button" class="opt" data-correct>Your ID or membership card</button>
+      </div>
+      <p class="why">The key proves who you are and who should be billed, which is why you keep it secret.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. Which of these is correct JSON?</p>
+      <div class="opts">
+        <button type="button" class="opt"><code>{name: "Amina"}</code></button>
+        <button type="button" class="opt" data-correct><code>{"name": "Amina"}</code></button>
+        <button type="button" class="opt"><code>{'name': 'Amina'}</code></button>
+        <button type="button" class="opt"><code>{"name": "Amina",}</code></button>
+      </div>
+      <p class="why">JSON needs double quotes around labels and words, and no comma after the last item.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. An AI tells you a date very confidently. What should you do?</p>
+      <div class="opts">
+        <button type="button" class="opt">Trust it, because it sounded sure</button>
+        <button type="button" class="opt" data-correct>Check it, especially if the date matters</button>
+        <button type="button" class="opt">Ask the same AI again and trust whichever answer comes twice</button>
+      </div>
+      <p class="why">The AI predicts text and cannot promise it is right. The same mistake can come back twice, so check with a reliable source.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>LLM (Large Language Model)</dt><dd>A program trained on a huge amount of text to predict what text comes next.</dd>
+    <dt>Model</dt><dd>A pattern the computer has learned. In this course, it means the AI itself.</dd>
+    <dt>GPT</dt><dd>One family of LLMs, made by OpenAI.</dd>
+    <dt>ChatGPT</dt><dd>An app with a chat window, built on GPT models.</dd>
+    <dt>Chat model</dt><dd>A model that answers directly. Fast and cheap.</dd>
+    <dt>Reasoning model</dt><dd>A model that works through steps before answering. Slower, costs more, better at multi-step problems.</dd>
+    <dt>Hallucination</dt><dd>When an AI states something false in a confident way.</dd>
+    <dt>API</dt><dd>The &ldquo;waiter&rdquo; that lets one program talk to another, such as your program talking to an AI.</dd>
+    <dt>Endpoint</dt><dd>The web address an API request is sent to.</dd>
+    <dt>GET and POST</dt><dd>GET asks for something. POST sends something, like an order.</dd>
+    <dt>API key</dt><dd>A secret password that identifies you. Keep it private.</dd>
+    <dt>Request and response</dt><dd>The request is what you send. The response is what comes back.</dd>
+    <dt>JSON</dt><dd>A tidy way of writing information as labels and values so computers can read it.</dd>
+    <dt>Token</dt><dd>A small chunk of text the AI reads and writes. Explained properly in Lesson 2.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>An LLM guesses the next words, very well. It is not a search engine, and it is not a person.</li>
+    <li>GPT is a model. ChatGPT is an app. LLM is the whole category.</li>
+    <li>An API call is address + action + key + order, written as JSON.</li>
+  </ol>
+  <p><strong>Next lesson:</strong> tokens, the small pieces of text that decide cost and speed, and the &ldquo;temperature&rdquo; dial that makes an AI more predictable or more creative.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="../index.html">All lessons</a>
+    <span class="pill soon">Lesson 2 coming soon</span>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes · Week 1 · Lesson 1</div>
+<script src="../assets/app.js"></script>
+</body>
+</html>
