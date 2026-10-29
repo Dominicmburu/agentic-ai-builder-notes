@@ -322,6 +322,33 @@ for model in MODELS:
   </div>
   <p>Prices change often, so always check the price shown on the model's page before using it.</p>
 
+<h3>How to work out the cost of one question</h3>
+  <p>Every model page on OpenRouter shows two prices, both <strong>per million tokens</strong>: one for <strong>input</strong> (what you send) and one for <strong>output</strong> (what the AI writes back). A million tokens is a huge amount of text, so one question costs a tiny fraction of that.</p>
+  <div class="callout big">
+    Cost = (input tokens &divide; 1,000,000 &times; input price) + (output tokens &divide; 1,000,000 &times; output price)
+  </div>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: buying sugar by the sack</span>
+    Imagine sugar priced per 1,000 kg sack. You only buy a spoonful, so you pay a tiny fraction of the sack price. Tokens work the same way: the price is per million, but you only use a few dozen.
+  </div>
+  <p><strong>Worked example.</strong> A short question uses 25 input tokens and the answer uses 80 output tokens. The model costs $0.01364 per million for input and $0.7016 per million for output.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Part</th><th>Sum</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td>Input</td><td>25 &divide; 1,000,000 &times; 0.01364</td><td>$0.00000034</td></tr>
+      <tr><td>Output</td><td>80 &divide; 1,000,000 &times; 0.7016</td><td>$0.0000561</td></tr>
+      <tr><td><strong>Total</strong></td><td></td><td><strong>about $0.00006</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>That is a small fraction of a cent. In the exercise table you can write &ldquo;less than $0.001&rdquo;, or &ldquo;free&rdquo; for a free model.</p>
+  <ul>
+    <li><strong>Where to find your token counts:</strong> the <code>usage</code> part of the reply, or the <strong>Activity</strong> page on OpenRouter, which also lists the cost of each request so you can copy it instead of calculating.</li>
+    <li><strong>Output usually costs more than input.</strong> Long answers cost more than long questions.</li>
+    <li><strong>Use the same kind of price for both models.</strong> The page can show the &ldquo;Listed&rdquo; price or the average price people actually paid. Pick one and use it for both, so the comparison is fair.</li>
+  </ul>
+
   <h2 id="exercise">Your exercise: one question, two AIs</h2>
   <p>Ask <strong>two different AI models</strong> the same question and compare them. Use this question, or make up your own:</p>
   <div class="callout">&ldquo;Explain what an API is to a 12-year-old in three sentences.&rdquo;</div>
