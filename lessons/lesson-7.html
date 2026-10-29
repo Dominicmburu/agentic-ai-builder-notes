@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 7: Agentic AI in n8n: tools, memory and the human trap | Agentic AI Builder</title>
+  <meta name="description" content="Give your agent tools and memory, and avoid treating it like a person.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#five-tricks">The five tricks behind every agent</a></li>
+    <li><a href="#memory-tools">Adding memory and tools in n8n</a></li>
+    <li><a href="#human-trap">The human trap</a></li>
+    <li><a href="#which-model">Chat model or reasoning model?</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 2 · Lesson 7 · Core</p>
+  <h1>Agentic AI in n8n: tools, memory and the human trap</h1>
+  <p class="lead">Give your agent tools and memory, and avoid treating it like a person.</p>
+  <div class="meta">
+    <span class="pill">About 45 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson7_Agentic_AI_in_n8n.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">An agent is an AI that runs tools in a loop to reach a goal. That is the working definition for the rest of the course.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Give an n8n agent tools and a memory node.</li>
+    <li>Spot the trap of treating the AI as if it were a person.</li>
+    <li>Choose between a chat model and a reasoning model for a task.</li>
+  </ul>
+
+  <h2 id="five-tricks">The five tricks behind every agent</h2>
+  <p>There is no magic in an agent. Five simple tricks, all things you already know, combine to make one:</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Trick</th><th>What it means</th><th>Where you met it</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1. Illusion of memory</strong></td><td>The app re-sends the conversation each time</td><td>Lesson 4</td></tr>
+      <tr><td><strong>2. Chaining</strong></td><td>The output of one AI step becomes the input of the next</td><td>Like passing a note along a line</td></tr>
+      <tr><td><strong>3. Tools</strong></td><td>The AI asks, your app acts</td><td>Lesson 4</td></tr>
+      <tr><td><strong>4. The loop</strong></td><td>Decide, act, observe, repeat until done</td><td>Lesson 4</td></tr>
+      <tr><td><strong>5. Thinking (reasoning)</strong></td><td>The AI works through steps before answering</td><td>Lesson 1, reasoning models</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a new assistant at work</span>
+    Picture an assistant with a notebook (memory), a phone and a calculator (tools), a checklist (the loop), and the habit of thinking before answering. None of those is clever alone. Together they get things done.
+  </div>
+
+  <h2 id="memory-tools">Adding memory and tools in n8n</h2>
+  <p>On the AI Agent node you will see slots at the bottom. Each has a <strong>+</strong> button.</p>
+  <div class="cards">
+    <div class="card"><h3>Memory</h3><p>Add a <strong>Simple Memory</strong> node. It keeps the last few messages and re-sends them each turn, which is the illusion of memory from Lesson 4. It has a setting for how many past messages to keep. That is your trim strategy.</p></div>
+    <div class="card"><h3>Tools</h3><p>Add a tool such as <strong>Calculator</strong> or <strong>Wikipedia</strong>. The agent now sees the tool's name and description and can ask for it, exactly like the loop in Lesson 4.</p></div>
+  </div>
+  <div class="callout">
+    <span class="label">The tool description is a prompt too</span>
+    The agent chooses tools by reading their names and descriptions. A clear name and a plain description of <em>when</em> to use it is what makes an agent reliable. If the agent ignores a tool, improve the description first.
+  </div>
+  <p>Add a line to your system message to guide it, for example:</p>
+  <div class="prompt"><span class="label">Add to the system message</span>For ANY arithmetic, always use the Calculator tool.
+For questions about public facts, use the Wikipedia tool.
+Do not use a tool when you can answer directly.</div>
+
+  <h2 id="human-trap">The human trap</h2>
+  <p>It is natural to talk to an AI as if it were a person. It writes like one, so we assume it thinks like one. That assumption leads to two kinds of failure.</p>
+  <div class="callout warn">
+    <span class="label">The trap</span>
+    Treating the model as a person makes you write <strong>vague prompts</strong> (&ldquo;you know what I mean&rdquo;) and build <strong>fragile designs</strong> (assuming it will just figure it out).
+  </div>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>If you treat it like a person</th><th>Treat it like a program that follows text</th></tr></thead>
+    <tbody>
+      <tr><td>&ldquo;You know what I mean.&rdquo;</td><td>State the task, rules and format in writing</td></tr>
+      <tr><td>&ldquo;It will remember from last time.&rdquo;</td><td>Add a memory node, or include what it needs</td></tr>
+      <tr><td>&ldquo;It will know to double-check.&rdquo;</td><td>Add a calculator tool, a rule, and a test</td></tr>
+      <tr><td>&ldquo;It tried hard, so it is probably right.&rdquo;</td><td>Check output against a test set</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Lesson 19 returns to this trap with a security angle.</p>
+
+  <h2 id="which-model">Chat model or reasoning model?</h2>
+  <div class="cards">
+    <div class="card"><h3>Chat model</h3><p>Quick, cheaper. Good for summaries, rewriting, classifying and most everyday agent work.</p></div>
+    <div class="card"><h3>Reasoning model</h3><p>Slower, costs more. Good for multi-step problems that need planning.</p></div>
+  </div>
+  <p>There is a twist. Inside an agent, a plain chat model sometimes behaves better than a reasoning model, because the agent loop already gives it room to work step by step. <strong>Do not assume the bigger model is better. Test both on the same questions.</strong></p>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>Add a memory node and one tool to your Lesson 6 agent, then test two things:</p>
+  <ol class="steps">
+    <li><strong>A question that needs the tool.</strong> For example, &ldquo;What is 17.5% of 2,480?&rdquo; Open the execution and confirm the Calculator was called.</li>
+    <li><strong>A follow-up that needs the memory.</strong> Say &ldquo;My name is Amina&rdquo;, ask something else, then ask &ldquo;What is my name?&rdquo;</li>
+    <li><strong>A control test.</strong> Remove the memory node and repeat step 2. Note what changes.</li>
+  </ol>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="memory"> Memory node added and the agent recalled my name</label>
+    <label class="check"><input type="checkbox" data-check="tool"> A tool is attached and the execution shows it being called</label>
+    <label class="check"><input type="checkbox" data-check="control"> I tried without memory and saw it forget</label>
+    <label class="check"><input type="checkbox" data-check="models"> I tried a chat model and a reasoning model on the same question and compared</label>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>The agent does the sum itself and gets it wrong</td><td>It did not use the tool. Make the rule firmer and check the tool's name and description.</td></tr>
+      <tr><td>It never remembers</td><td>The memory node is not connected, or the chat session changed. Test in one continuous chat.</td></tr>
+      <tr><td>It uses a tool for everything</td><td>Add &ldquo;do not use a tool when you can answer directly&rdquo;.</td></tr>
+      <tr><td>The model does not support tools</td><td>Pick a model that lists tool support.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What is the working definition of an agent in this course?</p>
+      <div class="opts">
+        <button type="button" class="opt">Any chatbot with a friendly name</button>
+        <button type="button" class="opt" data-correct>An AI model that runs tools in a loop to reach a goal</button>
+        <button type="button" class="opt">A program that never makes mistakes</button>
+      </div>
+      <p class="why">Tools plus a loop plus a goal. That is what makes it an agent.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. Which of these is one of the five tricks behind agents?</p>
+      <div class="opts">
+        <button type="button" class="opt">Emotions</button>
+        <button type="button" class="opt">Secret knowledge of your files</button>
+        <button type="button" class="opt" data-correct>Tools</button>
+      </div>
+      <p class="why">The five are illusion of memory, chaining, tools, the loop, and thinking or reasoning.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. What is the human trap?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Treating the AI as a person, which leads to vague prompts and fragile designs</button>
+        <button type="button" class="opt">Letting a human check the AI's work</button>
+        <button type="button" class="opt">Using too many tools</button>
+      </div>
+      <p class="why">The AI predicts text. Writing explicit instructions and testing beats hoping it understands.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. What does a memory node do?</p>
+      <div class="opts">
+        <button type="button" class="opt">Teaches the AI permanently</button>
+        <button type="button" class="opt" data-correct>Keeps recent messages and re-sends them, creating the illusion of memory</button>
+        <button type="button" class="opt">Makes the AI think harder</button>
+      </div>
+      <p class="why">It is the notebook from Lesson 4, handled for you.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Your agent keeps ignoring a tool. What should you check first?</p>
+      <div class="opts">
+        <button type="button" class="opt">Whether the AI is in a bad mood</button>
+        <button type="button" class="opt">Whether the workflow name is long enough</button>
+        <button type="button" class="opt" data-correct>The tool's name and description, and whether the system message says when to use it</button>
+      </div>
+      <p class="why">Agents choose tools by reading their descriptions, so clear descriptions are the first fix.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Agent</dt><dd>An AI model that runs tools in a loop to reach a goal.</dd>
+    <dt>Chaining</dt><dd>Passing the output of one AI step to the next as its input.</dd>
+    <dt>Simple Memory</dt><dd>An n8n node that stores recent messages and re-sends them, giving a chat the illusion of memory.</dd>
+    <dt>Anthropomorphizing</dt><dd>Treating the AI as if it were a person. Leads to vague prompts and fragile designs.</dd>
+    <dt>Reasoning model</dt><dd>A model that works through steps before answering. Slower and costlier, good for multi-step problems.</dd>
+    <dt>Chat model</dt><dd>A model that answers directly. Faster and cheaper.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>An agent is an LLM that runs tools in a loop to reach a goal.</li>
+    <li>Five tricks make an agent: illusion of memory, chaining, tools, the loop, and thinking.</li>
+    <li>Tool names and descriptions are prompts. Write them clearly.</li>
+    <li>Do not treat the AI like a person. Write explicit instructions and test them.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 8, Integrations with Docs and Email: connect your agent to Google Drive and Gmail so it can read a document and draft an email.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-6.html">&larr; Lesson 6</a>
+    <button type="button" class="secondary mid-btn" data-done="7">Mark this lesson as done</button>
+    <a class="btn" href="lesson-8.html">Lesson 8 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

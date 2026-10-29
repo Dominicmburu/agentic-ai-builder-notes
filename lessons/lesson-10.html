@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 10: Project: Daily Portfolio Rebalancer | Agentic AI Builder</title>
+  <meta name="description" content="A scheduled workflow that checks a portfolio every day, measures drift and emails a summary.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#brief">The brief</a></li>
+    <li><a href="#idea">The idea in plain words</a></li>
+    <li><a href="#deliverables">What you must hand in</a></li>
+    <li><a href="#maths">The maths, with a worked example</a></li>
+    <li><a href="#plan">The workflow, step by step</a></li>
+    <li><a href="#tests">Testing with simulated price changes</a></li>
+    <li><a href="#report">What to hand in</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#rubric">How the project is marked</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 2 · Lesson 10 · Project</p>
+  <h1>Project: Daily Portfolio Rebalancer</h1>
+  <p class="lead">A scheduled workflow that checks a portfolio every day, measures drift and emails a summary.</p>
+  <div class="meta">
+    <span class="pill">About 55 minutes to read</span>
+    <span class="pill project">Project</span>
+    <a class="pill" href="../downloads/Lesson10_Project_Portfolio_Rebalancer.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="brief">The brief</h2>
+  <div class="callout big">Build a workflow that runs every day, reads the holdings of a practice portfolio, measures how far each one has drifted from its target, and emails a summary.</div>
+  <div class="callout warn">
+    <span class="label">Learning exercise only</span>
+    Run this on <strong>paper or test data only</strong>. It is a learning exercise, <strong>not financial advice</strong>, and it must never place real trades.
+  </div>
+
+  <h2 id="idea">The idea in plain words</h2>
+  <p>Imagine a fruit basket plan: 40% mangoes, 35% oranges, 25% bananas, <em>by value</em>. Prices change, so after a while the mangoes might be worth more than 40% of the basket. The basket has <strong>drifted</strong> from the plan. <strong>Rebalancing</strong> means buying and selling a little to get back to the plan.</p>
+  <p>Your workflow does the checking automatically every day, and an AI agent writes a friendly summary.</p>
+
+  <h2 id="deliverables">What you must hand in</h2>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="schedule"> A <strong>daily schedule trigger</strong> that reads the holdings from the portfolio spreadsheet</label>
+    <label class="check"><input type="checkbox" data-check="weights"> <strong>Weight calculation</strong> for each asset, compared with its target</label>
+    <label class="check"><input type="checkbox" data-check="threshold"> A <strong>configurable drift threshold</strong>. Assets above it are flagged with a proposed rebalancing trade</label>
+    <label class="check"><input type="checkbox" data-check="agent"> An <strong>agent step</strong> that writes the summary, and an email that sends it</label>
+    <label class="check"><input type="checkbox" data-check="tests"> <strong>Tests</strong> with at least five simulated price changes</label>
+  </div>
+  <p>Your instructor's starting files are <strong>Equity Portfolio Rebalancer.json</strong> (a workflow you can import into n8n) and <strong>portfolio.xlsx</strong> (the holdings). Upload the spreadsheet to Google Sheets. Column names in your files may differ from the ones used below, so adjust to match.</p>
+
+  <h2 id="maths">The maths, with a worked example</h2>
+  <p>Four small calculations. Start with a practice portfolio worth $10,000:</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Asset</th><th>Shares</th><th>Price</th><th>Value</th><th>Target</th></tr></thead>
+    <tbody>
+      <tr><td>AAA</td><td>80</td><td>$50</td><td>$4,000</td><td>40%</td></tr>
+      <tr><td>BBB</td><td>35</td><td>$100</td><td>$3,500</td><td>35%</td></tr>
+      <tr><td>CCC</td><td>250</td><td>$10</td><td>$2,500</td><td>25%</td></tr>
+      <tr><td><strong>Total</strong></td><td></td><td></td><td><strong>$10,000</strong></td><td>100%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ol class="steps">
+    <li><strong>Value</strong> = shares &times; price. (AAA: 80 &times; $50 = $4,000)</li>
+    <li><strong>Weight</strong> = value &divide; total value. (AAA: $4,000 &divide; $10,000 = 40%)</li>
+    <li><strong>Drift</strong> = weight &minus; target weight, in percentage points. A positive number means overweight.</li>
+    <li><strong>Flag</strong> the asset if the drift, ignoring its sign, is bigger than your <strong>threshold</strong> (for example 3 points).</li>
+  </ol>
+  <p><strong>Proposed trade</strong> for a flagged asset: work out the value it <em>should</em> have (target &times; total), subtract what it has now, and divide by the price. A positive result means buy, a negative one means sell.</p>
+  <h3>A drifted example</h3>
+  <p>Suppose AAA rises 30%, from $50 to $65, and nothing else moves. The total becomes $11,200.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Asset</th><th>Value</th><th>Weight</th><th>Target</th><th>Drift</th><th>Result at 3-point threshold</th></tr></thead>
+    <tbody>
+      <tr><td>AAA</td><td>$5,200</td><td>46.43%</td><td>40%</td><td>+6.43</td><td>Flagged: sell about 11.1 shares</td></tr>
+      <tr><td>BBB</td><td>$3,500</td><td>31.25%</td><td>35%</td><td>&minus;3.75</td><td>Flagged: buy about 4.2 shares</td></tr>
+      <tr><td>CCC</td><td>$2,500</td><td>22.32%</td><td>25%</td><td>&minus;2.68</td><td>Hold (below the threshold)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Check the AAA trade: the target value is 40% of $11,200 = $4,480. It holds $5,200, so it sells $720 worth, which is $720 &divide; $65 = 11.1 shares.</p>
+
+  <h2 id="plan">The workflow, step by step</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 130" role="img" aria-label="Five steps: daily schedule, read the sheet, calculate weights and drift, AI agent writes the summary, Gmail sends it">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <rect x="4" y="30" width="116" height="64" rx="10" class="dg-box"/><text x="62" y="57" text-anchor="middle" class="dg-t">1. Schedule</text><text x="62" y="77" text-anchor="middle" class="dg-s">every day</text>
+      <rect x="134" y="30" width="116" height="64" rx="10" class="dg-box"/><text x="192" y="57" text-anchor="middle" class="dg-t">2. Read</text><text x="192" y="77" text-anchor="middle" class="dg-s">holdings sheet</text>
+      <rect x="264" y="30" width="116" height="64" rx="10" class="dg-hot"/><text x="322" y="57" text-anchor="middle" class="dg-t">3. Calculate</text><text x="322" y="77" text-anchor="middle" class="dg-s">weights, drift</text>
+      <rect x="394" y="30" width="116" height="64" rx="10" class="dg-box"/><text x="452" y="57" text-anchor="middle" class="dg-t">4. Summarise</text><text x="452" y="77" text-anchor="middle" class="dg-s">AI agent</text>
+      <rect x="524" y="30" width="122" height="64" rx="10" class="dg-box"/><text x="585" y="57" text-anchor="middle" class="dg-t">5. Email</text><text x="585" y="77" text-anchor="middle" class="dg-s">send summary</text>
+      <path d="M120 62H131" class="dg-l" marker-end="url(#ah)"/><path d="M250 62H261" class="dg-l" marker-end="url(#ah)"/><path d="M380 62H391" class="dg-l" marker-end="url(#ah)"/><path d="M510 62H521" class="dg-l" marker-end="url(#ah)"/>
+    </svg>
+    <figcaption>The whole project in five boxes.</figcaption>
+  </figure>
+  <ol class="steps">
+    <li><strong>Schedule Trigger.</strong> Set it to run once a day at a time you choose.</li>
+    <li><strong>Google Sheets, get rows.</strong> Read your holdings. Check that you get one item per asset.</li>
+    <li><strong>Code node, calculate.</strong> Does the four calculations above. A ready-made version follows. If you prefer not to use code, you can build the same sums with the Edit Fields node.</li>
+    <li><strong>AI Agent.</strong> Give it the results as text with <code>{{ JSON.stringify($input.all().map(i => i.json)) }}</code> and ask for a short, plain summary.</li>
+    <li><strong>Gmail, send.</strong> Send the summary to yourself while testing.</li>
+  </ol>
+
+  <h3>The Code node</h3>
+  <p>Add a <strong>Code</strong> node, set the language to JavaScript, and the mode to run once for all items. It expects columns named <code>ticker</code>, <code>shares</code>, <code>price</code> and <code>target</code>. A target can be a decimal like <code>0.4</code> or a percentage like <code>40%</code>. To change the threshold, edit the number on the first line.</p>
+  <div class="codebox"><div class="caption">code-node.js</div><pre><code>const THRESHOLD = 0.03; // flag assets that drift more than 3 percentage points
+
+// Turns "$1,234.50" or "40%" into a plain number
+const toNumber = (v) => Number(String(v).replace(/[^0-9.\-]/g, ""));
+
+const rows = $input.all().map((item) => {
+  let target = toNumber(item.json.target);
+  if (target &gt; 1) target = target / 100; // 40 means 40%
+  return {
+    ticker: item.json.ticker,
+    shares: toNumber(item.json.shares),
+    price: toNumber(item.json.price),
+    target: target,
+  };
+});
+
+const total = rows.reduce((sum, r) =&gt; sum + r.shares * r.price, 0);
+
+return rows.map((r) =&gt; {
+  const value = r.shares * r.price;
+  const weight = value / total;
+  const drift = weight - r.target;
+  const flagged = Math.abs(drift) &gt; THRESHOLD;
+  const tradeValue = r.target * total - value;
+  return {
+    json: {
+      ticker: r.ticker,
+      value: Math.round(value * 100) / 100,
+      weight: Math.round(weight * 10000) / 10000,
+      target: r.target,
+      drift: Math.round(drift * 10000) / 10000,
+      flagged: flagged,
+      action: !flagged ? "hold" : tradeValue &gt; 0 ? "buy" : "sell",
+      tradeShares: flagged ? Math.round(Math.abs(tradeValue / r.price) * 10) / 10 : 0,
+    },
+  };
+});</code></pre></div>
+  <div class="prompt"><span class="label">Prompt for the summary agent</span>You write a short daily portfolio note for a learner using a PRACTICE portfolio.
+Below is a list of assets with their weight, target, drift, and a proposed action.
+Write: (1) one sentence on overall balance, (2) one line per flagged asset with the proposed trade, (3) the words "Practice data only. Not financial advice."
+Use only the numbers provided. Do not invent prices or news.
+
+DATA:
+(the calculated results go here)</div>
+
+  <h2 id="tests">Testing with simulated price changes</h2>
+  <p>You need at least five simulated price changes. Change the prices in your test sheet, run the workflow and check the result. Using the practice portfolio above and a 3-point threshold, here is what you should see:</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Test</th><th>Price change</th><th>Expected result</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>AAA up 10%</td><td>No flags. The biggest drift is 2.3 points, under the threshold</td></tr>
+      <tr><td>2</td><td>BBB down 10%</td><td>No flags. The biggest drift is 2.4 points</td></tr>
+      <tr><td>3</td><td>CCC doubles</td><td>All flagged. Buy about 20.0 AAA and 8.8 BBB, sell about 93.8 CCC</td></tr>
+      <tr><td>4</td><td>Every price down 5%</td><td>No flags. All weights stay the same, so nothing drifts</td></tr>
+      <tr><td>5</td><td>AAA up 30%</td><td>AAA flagged: sell about 11.1. BBB flagged: buy about 4.2. CCC holds</td></tr>
+      <tr><td>6</td><td>AAA up 10%, threshold lowered to 2 points</td><td>AAA flagged: sell about 4.4. Shows why the threshold matters</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>If your numbers differ, find out why. A common cause is a target stored as <code>40%</code> text instead of a number (the code above handles that), or a price column read as text.</p>
+
+  <h2 id="report">What to hand in</h2>
+  <ul>
+    <li>Your exported workflow file, or screenshots of the canvas.</li>
+    <li>A results table for your five or more tests: change made, what you expected, what you got, pass or fail.</li>
+    <li>A screenshot of one real summary email.</li>
+    <li>A short note: what the threshold does, and what you would change if this were ever used for real.</li>
+  </ul>
+  <div class="table-scroll">
+  <table class="fill-table">
+    <thead><tr><th>Test</th><th>Change made</th><th>Expected</th><th>Got</th><th>Pass?</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><input name="t1c" aria-label="Test 1 change"></td><td><input name="t1e" aria-label="Test 1 expected"></td><td><input name="t1g" aria-label="Test 1 got"></td><td><input name="t1p" aria-label="Test 1 pass"></td></tr>
+      <tr><td>2</td><td><input name="t2c" aria-label="Test 2 change"></td><td><input name="t2e" aria-label="Test 2 expected"></td><td><input name="t2g" aria-label="Test 2 got"></td><td><input name="t2p" aria-label="Test 2 pass"></td></tr>
+      <tr><td>3</td><td><input name="t3c" aria-label="Test 3 change"></td><td><input name="t3e" aria-label="Test 3 expected"></td><td><input name="t3g" aria-label="Test 3 got"></td><td><input name="t3p" aria-label="Test 3 pass"></td></tr>
+      <tr><td>4</td><td><input name="t4c" aria-label="Test 4 change"></td><td><input name="t4e" aria-label="Test 4 expected"></td><td><input name="t4g" aria-label="Test 4 got"></td><td><input name="t4p" aria-label="Test 4 pass"></td></tr>
+      <tr><td>5</td><td><input name="t5c" aria-label="Test 5 change"></td><td><input name="t5e" aria-label="Test 5 expected"></td><td><input name="t5g" aria-label="Test 5 got"></td><td><input name="t5p" aria-label="Test 5 pass"></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td><code>NaN</code> in the results</td><td>A column is text, such as a price with a currency sign. Clean it in the sheet or with <code>toNumber</code>.</td></tr>
+      <tr><td>Weights do not add up to 100%</td><td>A holding is missing from the sheet, or the targets do not total 100%.</td></tr>
+      <tr><td>The Code node returns an error</td><td>It must return a list of objects, each with a <code>json</code> field.</td></tr>
+      <tr><td>The schedule did not run</td><td>The workflow is not active, or the time zone differs from yours.</td></tr>
+      <tr><td>The summary contains made-up numbers</td><td>Add &ldquo;use only the numbers provided&rdquo; and compare it with the Code node's output.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="rubric">How the project is marked</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Area</th><th>Points</th><th>Full marks when</th></tr></thead>
+    <tbody>
+      <tr><td>Schedule and data</td><td>15</td><td>Runs daily and reads every holding correctly</td></tr>
+      <tr><td>Calculation</td><td>30</td><td>Weights, drift and proposed trades are correct, with a configurable threshold</td></tr>
+      <tr><td>Agent summary and email</td><td>20</td><td>Clear summary using only provided numbers, sent by email</td></tr>
+      <tr><td>Tests</td><td>25</td><td>Five or more simulated changes, each checked against an expected result</td></tr>
+      <tr><td>Safety and notes</td><td>10</td><td>Uses practice data, states it is not financial advice, explains the threshold</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. A portfolio is worth $10,000. Asset A is worth $4,500 and its target is 40%. What is its drift?</p>
+      <div class="opts">
+        <button type="button" class="opt">-5 percentage points</button>
+        <button type="button" class="opt" data-correct>+5 percentage points: overweight</button>
+        <button type="button" class="opt">+0.5 percentage points</button>
+      </div>
+      <p class="why">Weight is 4,500 / 10,000 = 45%. Drift = 45% - 40% = +5 points.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. The threshold is 3 points and an asset has drifted 2.4 points. What happens?</p>
+      <div class="opts">
+        <button type="button" class="opt">It is flagged and sold</button>
+        <button type="button" class="opt">The workflow stops with an error</button>
+        <button type="button" class="opt" data-correct>It is not flagged: hold</button>
+      </div>
+      <p class="why">Only drift bigger than the threshold, ignoring the sign, is flagged.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. All prices fall by exactly 5%. Do the weights change?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>No. Every value shrinks by the same share, so nothing drifts</button>
+        <button type="button" class="opt">Yes, every weight falls by 5%</button>
+        <button type="button" class="opt">Yes, the biggest holding gains weight</button>
+      </div>
+      <p class="why">Weights are shares of the total, and equal moves leave the shares unchanged.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. Which step turns the calculated numbers into a readable note?</p>
+      <div class="opts">
+        <button type="button" class="opt">The schedule trigger</button>
+        <button type="button" class="opt" data-correct>The AI agent step</button>
+        <button type="button" class="opt">The Google Sheets node</button>
+      </div>
+      <p class="why">The agent writes the summary from the numbers it is given. It should not invent any.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Where should you run this project?</p>
+      <div class="opts">
+        <button type="button" class="opt">On a real brokerage account</button>
+        <button type="button" class="opt">Anywhere, as long as the workflow is active</button>
+        <button type="button" class="opt" data-correct>On paper or test data only: it is a learning exercise, not financial advice</button>
+      </div>
+      <p class="why">Never connect a learning workflow to real trading.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Portfolio</dt><dd>A collection of investments held together. In this project, practice data only.</dd>
+    <dt>Weight</dt><dd>An asset's value as a share of the whole portfolio's value.</dd>
+    <dt>Target weight</dt><dd>The share you planned for an asset.</dd>
+    <dt>Drift</dt><dd>The difference between an asset's weight and its target, in percentage points.</dd>
+    <dt>Threshold</dt><dd>The drift size above which an asset is flagged.</dd>
+    <dt>Rebalancing</dt><dd>Buying and selling to bring weights back to their targets.</dd>
+    <dt>Schedule trigger</dt><dd>An n8n node that starts a workflow at set times, such as once a day.</dd>
+    <dt>Code node</dt><dd>An n8n node where you write a small piece of code to process data.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>A schedule trigger makes a workflow run by itself every day.</li>
+    <li>Weight = value / total. Drift = weight - target. Flag when the drift passes the threshold.</li>
+    <li>Test with simulated price changes and compare to expected results before trusting any workflow.</li>
+    <li>This is practice data only, never financial advice.</li>
+  </ol>
+  <p><strong>Next:</strong> Week 3 begins. Lesson 11 adds voice: build a conversational voice agent with ElevenLabs.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-9.html">&larr; Lesson 9</a>
+    <button type="button" class="secondary mid-btn" data-done="10">Mark this lesson as done</button>
+    <a class="btn" href="lesson-11.html">Lesson 11 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

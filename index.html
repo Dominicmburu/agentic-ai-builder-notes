@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Agentic AI Builder: Course Notes</title>
+  <title>Course notes | Agentic AI Builder</title>
   <meta name="description" content="Plain-language notes for the 4-week Agentic AI Builder course.">
   <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -11,52 +11,163 @@
 <header class="site-header">
   <div class="inner">
     <a class="brand" href="index.html">Agentic AI Builder</a>
-    <nav><a href="#week-1">Week 1</a><a href="#later">Weeks 2 to 4</a></nav>
+    <nav><a href="index.html">All lessons</a><a href="glossary.html">Glossary</a></nav>
   </div>
 </header>
 
 <div class="wrap">
-<main style="max-width:820px">
+<main style="max-width:900px">
   <p class="eyebrow">Course notes</p>
   <h1>Agentic AI Builder</h1>
   <p class="lead">A 4-week course that takes you from &ldquo;what is an AI?&rdquo; to building AI helpers that do real work. These notes explain everything in plain language, with everyday examples.</p>
-
   <div class="callout">
     <span class="label">How to use these notes</span>
-    Read each lesson before or after class. Try the small activities on the page, do the exercise at the end, then take the quick quiz. No technical background is needed.
+    Read each lesson before or after class. Try the small activities on the page, do the exercise at the end, then take the quick quiz. No technical background is needed. Every week ends with a project, marked in red.
   </div>
-
+  <p><span id="progress"></span></p>
+  <p><a class="btn secondary" href="glossary.html">Open the A to Z glossary</a> </p>
+  <details><summary>Download the lesson slides (PowerPoint)</summary><p><a class="btn secondary" href="downloads/Lesson1_Meet_the_AI.pptx">Lesson 1 slides</a> <a class="btn secondary" href="downloads/Lesson2_Tokens_and_Temperature.pptx">Lesson 2 slides</a> <a class="btn secondary" href="downloads/Lesson3_Prompt_Engineering.pptx">Lesson 3 slides</a> <a class="btn secondary" href="downloads/Lesson4_Memory_Context_and_Tools.pptx">Lesson 4 slides</a> <a class="btn secondary" href="downloads/Lesson5_Project_Assistant_with_Memory.pptx">Lesson 5 slides</a> <a class="btn secondary" href="downloads/Lesson6_First_n8n_AI_Agent.pptx">Lesson 6 slides</a> <a class="btn secondary" href="downloads/Lesson7_Agentic_AI_in_n8n.pptx">Lesson 7 slides</a> <a class="btn secondary" href="downloads/Lesson8_Google_Docs_and_Gmail.pptx">Lesson 8 slides</a> <a class="btn secondary" href="downloads/Lesson9_Data_Expressions_Webhooks.pptx">Lesson 9 slides</a> <a class="btn secondary" href="downloads/Lesson10_Project_Portfolio_Rebalancer.pptx">Lesson 10 slides</a> <a class="btn secondary" href="downloads/Lesson11_Voice_Agents_ElevenLabs.pptx">Lesson 11 slides</a> <a class="btn secondary" href="downloads/Lesson12_ElevenLabs_and_n8n.pptx">Lesson 12 slides</a> <a class="btn secondary" href="downloads/Lesson13_RAG_and_Agentic_RAG.pptx">Lesson 13 slides</a> <a class="btn secondary" href="downloads/Lesson14_Supabase_Vectors_and_Ingest.pptx">Lesson 14 slides</a> <a class="btn secondary" href="downloads/Lesson15_Project_Product_Expert_Voice_Agent.pptx">Lesson 15 slides</a> <a class="btn secondary" href="downloads/Lesson16_Self_Hosted_n8n_and_Local_Models.pptx">Lesson 16 slides</a> <a class="btn secondary" href="downloads/Lesson17_Advanced_Integrations.pptx">Lesson 17 slides</a> <a class="btn secondary" href="downloads/Lesson18_MCP.pptx">Lesson 18 slides</a> <a class="btn secondary" href="downloads/Lesson19_Context_Engineering_and_Sub_Agents.pptx">Lesson 19 slides</a> <a class="btn secondary" href="downloads/Lesson20_Capstone_Multi_Agent_Sales_System.pptx">Lesson 20 slides</a></p></details>
   <h2 id="week-1">Week 1: Foundations of LLMs</h2>
-  <p>Build the mental model every later lesson depends on: what an AI model is, how it reads text, and how it uses tools.</p>
+  <p class="week-intro">Build the mental model every later lesson depends on: what a model is, how it reads text, and how it acts through tools. Four core lessons lead to one project.</p>
   <div class="cards">
-    <a class="card" href="lessons/lesson-1.html">
-      <span class="pill">Ready</span>
+    <a class="card" href="lessons/lesson-1.html" data-lesson="1">
+      <span class="pill core">Core</span>
       <h3>Lesson 1</h3>
       <p><strong>Meet the AI that reads and writes</strong></p>
-      <p>What an LLM is, LLM vs GPT vs ChatGPT, APIs and JSON.</p>
+      <p>An introduction to LLMs and APIs, with no technical background needed.</p>
     </a>
-    <div class="card soon"><span class="pill soon">Coming soon</span><h3>Lesson 2</h3><p><strong>Tokenization and how generation works</strong></p></div>
-    <div class="card soon"><span class="pill soon">Coming soon</span><h3>Lesson 3</h3><p><strong>Prompt engineering</strong></p></div>
-    <div class="card soon"><span class="pill soon">Coming soon</span><h3>Lesson 4</h3><p><strong>Memory, context and tools</strong></p></div>
-    <div class="card soon"><span class="pill soon">Coming soon</span><h3>Lesson 5</h3><p><strong>Project: tool-using assistant with memory</strong></p></div>
+    <a class="card" href="lessons/lesson-2.html" data-lesson="2">
+      <span class="pill core">Core</span>
+      <h3>Lesson 2</h3>
+      <p><strong>Tokens: how an AI reads, and why it matters</strong></p>
+      <p>Tokenization and how generation works, in plain language.</p>
+    </a>
+    <a class="card" href="lessons/lesson-3.html" data-lesson="3">
+      <span class="pill core">Core</span>
+      <h3>Lesson 3</h3>
+      <p><strong>Prompt engineering: giving clear instructions</strong></p>
+      <p>How to write a prompt that works, and how to prove it works.</p>
+    </a>
+    <a class="card" href="lessons/lesson-4.html" data-lesson="4">
+      <span class="pill core">Core</span>
+      <h3>Lesson 4</h3>
+      <p><strong>Memory, context and tools: from chatbot to agent</strong></p>
+      <p>Why a chat only seems to remember, and how an AI uses tools to act.</p>
+    </a>
+    <a class="card project" href="lessons/lesson-5.html" data-lesson="5">
+      <span class="pill project">Project</span>
+      <h3>Lesson 5</h3>
+      <p><strong>Project: a tool-using assistant with memory</strong></p>
+      <p>Build a small assistant, test it honestly, and report what failed.</p>
+    </a>
   </div>
-
-  <h2 id="later">Weeks 2 to 4</h2>
-  <details>
-    <summary>Week 2: Automate with n8n cloud</summary>
-    <p>Lessons 6 to 9: first n8n AI agent, agentic AI in n8n, integrations with docs and email, data and integrations. Lesson 10 is the project: a daily portfolio rebalancer.</p>
-  </details>
-  <details>
-    <summary>Week 3: Accelerate with voice agents and RAG</summary>
-    <p>Lessons 11 to 14: voice agents with ElevenLabs, integrating ElevenLabs and n8n, RAG and agentic RAG, Supabase vectors and data ingest. Lesson 15 is the project: a product expert voice agent.</p>
-  </details>
-  <details>
-    <summary>Week 4: Amplify with multi-agent systems and MCP</summary>
-    <p>Lessons 16 to 19: self-hosted n8n and local LLMs, advanced integrations, MCP, context engineering and sub-agents. Lesson 20 is the capstone: amplify your business.</p>
-  </details>
+  <h2 id="week-2">Week 2: Automate with n8n cloud</h2>
+  <p class="week-intro">Turn the foundations into working automations in n8n cloud. Four lessons lead to a scheduled portfolio workflow.</p>
+  <div class="cards">
+    <a class="card" href="lessons/lesson-6.html" data-lesson="6">
+      <span class="pill core">Core</span>
+      <h3>Lesson 6</h3>
+      <p><strong>Your first n8n AI agent</strong></p>
+      <p>Meet n8n, build a chat agent with no code, and run it live.</p>
+    </a>
+    <a class="card" href="lessons/lesson-7.html" data-lesson="7">
+      <span class="pill core">Core</span>
+      <h3>Lesson 7</h3>
+      <p><strong>Agentic AI in n8n: tools, memory and the human trap</strong></p>
+      <p>Give your agent tools and memory, and avoid treating it like a person.</p>
+    </a>
+    <a class="card" href="lessons/lesson-8.html" data-lesson="8">
+      <span class="pill integration">Integration</span>
+      <h3>Lesson 8</h3>
+      <p><strong>Connecting to Google Docs and Gmail</strong></p>
+      <p>Choose the right way to log in, then build an agent that reads a document and drafts an email.</p>
+    </a>
+    <a class="card" href="lessons/lesson-9.html" data-lesson="9">
+      <span class="pill integration">Integration</span>
+      <h3>Lesson 9</h3>
+      <p><strong>Data, expressions and webhooks</strong></p>
+      <p>How data moves between boxes in n8n, and how other systems can start your workflow.</p>
+    </a>
+    <a class="card project" href="lessons/lesson-10.html" data-lesson="10">
+      <span class="pill project">Project</span>
+      <h3>Lesson 10</h3>
+      <p><strong>Project: Daily Portfolio Rebalancer</strong></p>
+      <p>A scheduled workflow that checks a portfolio every day, measures drift and emails a summary.</p>
+    </a>
+  </div>
+  <h2 id="week-3">Week 3: Accelerate with voice agents and RAG</h2>
+  <p class="week-intro">Add voice and knowledge. Connect a voice agent to your own data, using retrieval so that answers come from real documents.</p>
+  <div class="cards">
+    <a class="card" href="lessons/lesson-11.html" data-lesson="11">
+      <span class="pill core">Core</span>
+      <h3>Lesson 11</h3>
+      <p><strong>Voice agents with ElevenLabs</strong></p>
+      <p>Build an AI that you can talk to, and find where it gets slow or goes off topic.</p>
+    </a>
+    <a class="card" href="lessons/lesson-12.html" data-lesson="12">
+      <span class="pill core">Core</span>
+      <h3>Lesson 12</h3>
+      <p><strong>Joining ElevenLabs and n8n: two patterns</strong></p>
+      <p>Choose who runs the show, and use a webhook as the bridge.</p>
+    </a>
+    <a class="card" href="lessons/lesson-13.html" data-lesson="13">
+      <span class="pill core">Core</span>
+      <h3>Lesson 13</h3>
+      <p><strong>RAG and agentic RAG</strong></p>
+      <p>How an AI answers from your own documents instead of guessing.</p>
+    </a>
+    <a class="card" href="lessons/lesson-14.html" data-lesson="14">
+      <span class="pill integration">Integration</span>
+      <h3>Lesson 14</h3>
+      <p><strong>Supabase vectors and data ingest</strong></p>
+      <p>Build the filing cabinet, load your data into it, and check that the search finds the right things.</p>
+    </a>
+    <a class="card project" href="lessons/lesson-15.html" data-lesson="15">
+      <span class="pill project">Project</span>
+      <h3>Lesson 15</h3>
+      <p><strong>Project: the Product Expert voice agent</strong></p>
+      <p>Put Week 3 together: a voice agent that answers questions from your product data and declines the rest.</p>
+    </a>
+  </div>
+  <h2 id="week-4">Week 4: Amplify with multi-agent systems and MCP</h2>
+  <p class="week-intro">Scale the work. Run your own infrastructure, share tools through MCP, and split agents into sub-agents. Four lessons lead to a capstone.</p>
+  <div class="cards">
+    <a class="card" href="lessons/lesson-16.html" data-lesson="16">
+      <span class="pill core">Core</span>
+      <h3>Lesson 16</h3>
+      <p><strong>Self-hosted n8n and local models</strong></p>
+      <p>Run n8n and an AI model on your own computer, and know when that is worth it.</p>
+    </a>
+    <a class="card" href="lessons/lesson-17.html" data-lesson="17">
+      <span class="pill integration">Integration</span>
+      <h3>Lesson 17</h3>
+      <p><strong>Advanced integrations</strong></p>
+      <p>Send data with POST, split work into sub-workflows, and handle errors without panic.</p>
+    </a>
+    <a class="card" href="lessons/lesson-18.html" data-lesson="18">
+      <span class="pill core">Core</span>
+      <h3>Lesson 18</h3>
+      <p><strong>MCP: a standard plug for tools</strong></p>
+      <p>How agents connect to outside tools through one common standard, and how to do it safely.</p>
+    </a>
+    <a class="card" href="lessons/lesson-19.html" data-lesson="19">
+      <span class="pill core">Core</span>
+      <h3>Lesson 19</h3>
+      <p><strong>Context engineering and sub-agents</strong></p>
+      <p>Give an agent exactly what it needs, split big jobs between specialists, and avoid the lethal trifecta.</p>
+    </a>
+    <a class="card project" href="lessons/lesson-20.html" data-lesson="20">
+      <span class="pill project">Project</span>
+      <h3>Lesson 20</h3>
+      <p><strong>Capstone: a multi-agent sales system</strong></p>
+      <p>Bring the whole course together: a business-development manager agent with specialist sub-agents.</p>
+    </a>
+  </div>
 </main>
 </div>
 
-<div class="footer">Agentic AI Builder notes</div>
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="assets/app.js"></script>
+<script src="assets/widgets.js"></script>
 </body>
 </html>

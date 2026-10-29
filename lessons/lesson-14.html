@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 14: Supabase vectors and data ingest | Agentic AI Builder</title>
+  <meta name="description" content="Build the filing cabinet, load your data into it, and check that the search finds the right things.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#what">What is Supabase?</a></li>
+    <li><a href="#table">Step 1: create the table</a></li>
+    <li><a href="#keys">Step 2: connect n8n safely</a></li>
+    <li><a href="#ingest">Step 3: the ingestion workflow</a></li>
+    <li><a href="#test">Step 4: test the retrieval</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 3 · Lesson 14 · Integration</p>
+  <h1>Supabase vectors and data ingest</h1>
+  <p class="lead">Build the filing cabinet, load your data into it, and check that the search finds the right things.</p>
+  <div class="meta">
+    <span class="pill">About 55 minutes to read</span>
+    <span class="pill integration">Integration</span>
+    <a class="pill" href="../downloads/Lesson14_Supabase_Vectors_and_Ingest.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">Supabase gives you a database that can store embeddings and search them by closeness. An n8n workflow reads your data, embeds it and files it there. Then you test the search before you trust it.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Create a vector table in Supabase.</li>
+    <li>Build an n8n ingestion workflow that loads product data with metadata.</li>
+    <li>Check retrieval quality with a quick test.</li>
+  </ul>
+
+  <h2 id="what">What is Supabase?</h2>
+  <p>Supabase is an online database service built on PostgreSQL. It has a free tier. An add-on called <strong>pgvector</strong> lets it store embeddings and find the closest ones.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a filing cabinet with a smart assistant</span>
+    A normal database is a cabinet where you find a file by its exact label. A vector database is a cabinet where you can say &ldquo;bring me whatever is about returning shoes&rdquo; and it brings the nearest matches.
+  </div>
+
+  <h2 id="table">Step 1: create the table</h2>
+  <ol class="steps">
+    <li>Create a free Supabase account and a new project. Save the database password somewhere safe.</li>
+    <li>Open the <strong>SQL Editor</strong>.</li>
+    <li>Paste the code below and run it.</li>
+  </ol>
+  <div class="codebox"><span class="label">create-table.sql</span><pre><code>-- Turn on the vector add-on
+create extension if not exists vector;
+
+-- The table that holds one row per chunk
+create table documents (
+  id bigserial primary key,
+  content text,
+  metadata jsonb,
+  embedding vector(1536)
+);
+
+-- A search function that returns the closest chunks
+create or replace function match_documents (
+  query_embedding vector(1536),
+  match_count int default 5,
+  filter jsonb default '{}'
+) returns table (
+  id bigint,
+  content text,
+  metadata jsonb,
+  similarity float
+)
+language sql stable
+as $$
+  select
+    id, content, metadata,
+    1 - (documents.embedding <=> query_embedding) as similarity
+  from documents
+  where metadata @> filter
+  order by documents.embedding <=> query_embedding
+  limit match_count;
+$$;</code></pre></div>
+  <div class="callout warn">
+    <span class="label">The number 1536 must match your embedding model</span>
+    This is the length of each embedding. It must be identical to the length your embedding model produces. A common OpenAI embedding model produces 1536. If you pick another model, check its length in its documentation and change the number in both places. A mismatch is the most common error in this lesson.
+  </div>
+  <div class="callout">
+    <span class="label">Check the current n8n guide</span>
+    The n8n Supabase Vector Store node expects a table and function in a specific shape, and it can change between versions. The SQL above follows the common pattern. If the node complains, compare with the current n8n documentation for the Supabase Vector Store.
+  </div>
+
+  <h2 id="keys">Step 2: connect n8n safely</h2>
+  <p>In Supabase, open the project settings and find the <strong>project URL</strong> and the API keys. n8n's Supabase credential asks for the URL and a key.</p>
+  <div class="callout warn">
+    <span class="label">The service key is a master key</span>
+    The <strong>service role</strong> key can read and write everything and skips the safety rules. Put it only inside an n8n credential. Never paste it into a web page, a chat, a screenshot or a public GitHub repository. If it leaks, rotate it in Supabase straight away.
+  </div>
+
+  <h2 id="ingest">Step 3: the ingestion workflow</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 150" role="img" aria-label="Ingestion workflow: read the product file, turn each row into a text sentence with metadata, split if needed, embed, and store in Supabase">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <rect x="6" y="40" width="112" height="64" rx="10" class="dg-box"/><text x="62" y="67" text-anchor="middle" class="dg-t">Read file</text><text x="62" y="87" text-anchor="middle" class="dg-s">sheet or Excel</text>
+      <rect x="140" y="40" width="112" height="64" rx="10" class="dg-box"/><text x="196" y="67" text-anchor="middle" class="dg-t">Build text</text><text x="196" y="87" text-anchor="middle" class="dg-s">one row, one chunk</text>
+      <rect x="274" y="40" width="112" height="64" rx="10" class="dg-box"/><text x="330" y="67" text-anchor="middle" class="dg-t">Add metadata</text><text x="330" y="87" text-anchor="middle" class="dg-s">name, category</text>
+      <rect x="408" y="40" width="112" height="64" rx="10" class="dg-hot"/><text x="464" y="67" text-anchor="middle" class="dg-t">Embed</text><text x="464" y="87" text-anchor="middle" class="dg-s">numbers</text>
+      <rect x="542" y="40" width="102" height="64" rx="10" class="dg-box"/><text x="593" y="67" text-anchor="middle" class="dg-t">Supabase</text><text x="593" y="87" text-anchor="middle" class="dg-s">store</text>
+      <path d="M118 72H137" class="dg-l" marker-end="url(#ah)"/><path d="M252 72H271" class="dg-l" marker-end="url(#ah)"/><path d="M386 72H405" class="dg-l" marker-end="url(#ah)"/><path d="M520 72H539" class="dg-l" marker-end="url(#ah)"/>
+    </svg>
+    <figcaption>Run once to load, and again when the data changes.</figcaption>
+  </figure>
+  <ol class="steps">
+    <li><strong>Read your data.</strong> Use a Google Sheets node, or the node that reads a spreadsheet file, to get one item per product.</li>
+    <li><strong>Make each row one readable chunk.</strong> Use an Edit Fields node to build a sentence that includes the product name, so context is never lost:
+      <div class="codebox"><pre><code>{{ $json.Name }} ({{ $json.Category }}). {{ $json.Description }} Price: {{ $json.Price }}.</code></pre></div>
+    </li>
+    <li><strong>Add the Supabase Vector Store node</strong> with the operation to <em>add documents</em>. Pick your table and connect an embeddings model node and a document loader.</li>
+    <li><strong>Add metadata</strong> in the loader: the product name, category and any ID. Metadata lets you filter later and show where an answer came from.</li>
+    <li><strong>Run it once</strong> and open the table in Supabase. You should see one row per product, with text, metadata and a long embedding.</li>
+  </ol>
+  <div class="callout">
+    <span class="label">Run it only once per load</span>
+    Running the workflow twice adds every row twice, and duplicates will clutter your search results. If you need to start again, clear the table first in the SQL Editor with <code>delete from documents;</code>.
+  </div>
+
+  <h2 id="test">Step 4: test the retrieval</h2>
+  <p>Never trust a search you have not tested. A quick method:</p>
+  <ol class="steps">
+    <li>Pick <strong>10 products at random</strong> from your file.</li>
+    <li>For each one, write a natural question about it, for example &ldquo;How much is the quiet blender?&rdquo;</li>
+    <li>Ask each question through a search-only workflow (a vector store node set to retrieve, with no agent yet).</li>
+    <li>Check whether the right product appears in the <strong>top 3 results</strong>.</li>
+  </ol>
+  <table class="fill-table">
+    <thead><tr><th>#</th><th>Product</th><th>My question</th><th>In top 3? (yes / no)</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><input name="p1" aria-label="Product 1"></td><td><input name="q1" aria-label="Question 1"></td><td><input name="r1" aria-label="Result 1"></td></tr>
+      <tr><td>2</td><td><input name="p2" aria-label="Product 2"></td><td><input name="q2" aria-label="Question 2"></td><td><input name="r2" aria-label="Result 2"></td></tr>
+      <tr><td>3</td><td><input name="p3" aria-label="Product 3"></td><td><input name="q3" aria-label="Question 3"></td><td><input name="r3" aria-label="Result 3"></td></tr>
+      <tr><td>4</td><td><input name="p4" aria-label="Product 4"></td><td><input name="q4" aria-label="Question 4"></td><td><input name="r4" aria-label="Result 4"></td></tr>
+      <tr><td>5</td><td><input name="p5" aria-label="Product 5"></td><td><input name="q5" aria-label="Question 5"></td><td><input name="r5" aria-label="Result 5"></td></tr>
+      <tr><td>6</td><td><input name="p6" aria-label="Product 6"></td><td><input name="q6" aria-label="Question 6"></td><td><input name="r6" aria-label="Result 6"></td></tr>
+      <tr><td>7</td><td><input name="p7" aria-label="Product 7"></td><td><input name="q7" aria-label="Question 7"></td><td><input name="r7" aria-label="Result 7"></td></tr>
+      <tr><td>8</td><td><input name="p8" aria-label="Product 8"></td><td><input name="q8" aria-label="Question 8"></td><td><input name="r8" aria-label="Result 8"></td></tr>
+      <tr><td>9</td><td><input name="p9" aria-label="Product 9"></td><td><input name="q9" aria-label="Question 9"></td><td><input name="r9" aria-label="Result 9"></td></tr>
+      <tr><td>10</td><td><input name="p10" aria-label="Product 10"></td><td><input name="q10" aria-label="Question 10"></td><td><input name="r10" aria-label="Result 10"></td></tr>
+    </tbody>
+  </table>
+  <p>Eight or more out of ten in the top three is a healthy start. If you get fewer, change the chunk text (add the name, category and key words) and re-load before changing anything else.</p>
+
+  <h2 id="exercise">Your exercise</h2>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="table"> The <code>documents</code> table exists in Supabase</label>
+    <label class="check"><input type="checkbox" data-check="load"> Every product is a row with text, metadata and an embedding</label>
+    <label class="check"><input type="checkbox" data-check="once"> I loaded the data only once and there are no duplicates</label>
+    <label class="check"><input type="checkbox" data-check="test"> I ran the 10-product test and recorded the results</label>
+    <label class="check"><input type="checkbox" data-check="key"> My service key lives only in an n8n credential</label>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>An error about vector dimensions, such as &ldquo;expected 1536 dimensions&rdquo;</td><td>The table's vector size does not match the embedding model. Change one so they agree, and re-create the table.</td></tr>
+      <tr><td>Error that the function <code>match_documents</code> does not exist</td><td>The SQL did not run fully, or the function name differs from the one the node uses.</td></tr>
+      <tr><td>Permission or &ldquo;row level security&rdquo; error</td><td>You used a key with fewer rights. For this course, use the service key inside the n8n credential only.</td></tr>
+      <tr><td>The same product appears several times</td><td>You loaded twice. Clear the table and load once.</td></tr>
+      <tr><td>Search returns the wrong product</td><td>Chunks lack the product name or key words. Improve the chunk text and re-load.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What does pgvector add to a PostgreSQL database?</p>
+      <div class="opts">
+        <button type="button" class="opt">A faster internet connection</button>
+        <button type="button" class="opt">Automatic email sending</button>
+        <button type="button" class="opt" data-correct>The ability to store embeddings and search by closeness</button>
+      </div>
+      <p class="why">pgvector is the add-on that makes a normal database into a vector store.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. Why must the vector size (such as 1536) match your embedding model?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>A table and an embedding model with different lengths cannot work together</button>
+        <button type="button" class="opt">It changes the colour of the results</button>
+        <button type="button" class="opt">It only matters for large files</button>
+      </div>
+      <p class="why">A dimension mismatch is the most common error.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. Why add metadata to each chunk?</p>
+      <div class="opts">
+        <button type="button" class="opt">To make the files smaller</button>
+        <button type="button" class="opt" data-correct>To filter results and show where an answer came from</button>
+        <button type="button" class="opt">To hide the data from the agent</button>
+      </div>
+      <p class="why">Metadata such as the product name and category makes results traceable and filterable.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. What is the safest place for the Supabase service key?</p>
+      <div class="opts">
+        <button type="button" class="opt">In a public GitHub repository</button>
+        <button type="button" class="opt">In a screenshot to share with classmates</button>
+        <button type="button" class="opt" data-correct>Inside an n8n credential</button>
+      </div>
+      <p class="why">The service key is a master key. Keep it out of anything shared.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. How do you check whether the search is good?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Ask questions about 10 random products and see if each appears in the top 3</button>
+        <button type="button" class="opt">Assume it works because nothing crashed</button>
+        <button type="button" class="opt">Read the embedding numbers</button>
+      </div>
+      <p class="why">Test retrieval separately before adding an agent on top.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Supabase</dt><dd>An online database service built on PostgreSQL, with a free tier.</dd>
+    <dt>PostgreSQL</dt><dd>A widely used database. Supabase is built on it.</dd>
+    <dt>pgvector</dt><dd>An add-on that lets PostgreSQL store and search embeddings.</dd>
+    <dt>Metadata</dt><dd>Extra labels attached to a chunk, such as product name and category.</dd>
+    <dt>Dimensions</dt><dd>The length of an embedding, for example 1536 numbers.</dd>
+    <dt>Service key</dt><dd>A master key for your Supabase project. Never share it.</dd>
+    <dt>SQL</dt><dd>The language used to talk to a database.</dd>
+    <dt>Top-k</dt><dd>How many of the closest chunks the search returns.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>Supabase with pgvector is the vector store: one row per chunk, holding text, metadata and an embedding.</li>
+    <li>The ingestion workflow reads data, builds a readable chunk for each row, adds metadata, embeds it and stores it. Load once.</li>
+    <li>Test retrieval with 10 random products before adding an agent. Match the vector size to your embedding model and guard your service key.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 15, the Week 3 project: a Product Expert voice agent that answers from your product data and declines what it should not answer.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-13.html">&larr; Lesson 13</a>
+    <button type="button" class="secondary mid-btn" data-done="14">Mark this lesson as done</button>
+    <a class="btn" href="lesson-15.html">Lesson 15 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

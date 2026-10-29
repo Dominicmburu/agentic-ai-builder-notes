@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 4: Memory, context and tools: from chatbot to agent | Agentic AI Builder</title>
+  <meta name="description" content="Why a chat only seems to remember, and how an AI uses tools to act.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#memory">The illusion of memory</a></li>
+    <li><a href="#window">The context window is a desk</a></li>
+    <li><a href="#strategies">Three ways to handle a long conversation</a></li>
+    <li><a href="#tools">Tools: how an AI acts in the world</a></li>
+    <li><a href="#loop">The agent loop</a></li>
+    <li><a href="#exercise">Your exercise: prove the memory is an illusion</a></li>
+    <li><a href="#mistakes">Common mistakes</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 1 · Lesson 4 · Core</p>
+  <h1>Memory, context and tools: from chatbot to agent</h1>
+  <p class="lead">Why a chat only seems to remember, and how an AI uses tools to act.</p>
+  <div class="meta">
+    <span class="pill">About 50 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson4_Memory_Context_and_Tools.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">The AI does not remember your chat. The app re-sends the whole conversation every time. And an AI cannot do things by itself: it asks, and your app acts. Put those two ideas in a loop and you have an agent.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Explain why a chat seems to have memory, and why the model does not.</li>
+    <li>Decide what to keep, summarise or drop when a conversation gets long.</li>
+    <li>Describe the agent loop and how a tool call works.</li>
+  </ul>
+
+  <h2 id="memory">The illusion of memory</h2>
+  <p>When you chat with an AI, it feels like it remembers what you said ten messages ago. It does not. Here is what really happens on every turn:</p>
+  <ol class="steps">
+    <li>You type a new message.</li>
+    <li>The app adds it to the <strong>whole conversation so far</strong>.</li>
+    <li>The app sends <strong>everything</strong> to the AI.</li>
+    <li>The AI reads it from the very top, then writes the next reply.</li>
+  </ol>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: the notebook</span>
+    Imagine a helper who forgets everything the moment you walk away. To get around that, every time you speak to them you hand over a notebook and say &ldquo;read this from page one, then answer.&rdquo; The notebook is the memory. The helper has none.
+  </div>
+  <p>The proof: if the app stops sending message 1, the AI has never heard of it.</p>
+
+  <h2 id="window">The context window is a desk</h2>
+  <p>Last lesson you met the context window, the maximum number of tokens in one call. Everything in the conversation counts against it: your instructions, every earlier message, tool results, and the reply being written.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: the desk</span>
+    The context window is the size of the desk. Only what fits on the desk can be read. Pile on too much and either something falls off, or the helper gets distracted by the mess.
+  </div>
+  <p>Two problems follow. If you go over the limit, the call fails or the oldest text is cut. And even below the limit, a desk piled with irrelevant papers can make answers less focused. <strong>More is not always better.</strong></p>
+
+  <h2 id="strategies">Three ways to handle a long conversation</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Strategy</th><th>What it does</th><th>Everyday comparison</th><th>Weakness</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Trim</strong></td><td>Keep only the last few messages</td><td>Throw away the oldest pages</td><td>Early facts vanish</td></tr>
+      <tr><td><strong>Summarise</strong></td><td>Replace old messages with a short summary</td><td>Write a one-page recap of the meeting</td><td>Needs an extra AI call, and details can be lost</td></tr>
+      <tr><td><strong>Store and retrieve</strong></td><td>Save facts outside the prompt, fetch the relevant ones when needed</td><td>A filing cabinet with an index</td><td>Needs search logic (you build this in Week 3)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The question to ask for every piece of information: <strong>keep it, summarise it, or drop it?</strong></p>
+
+  <h2 id="tools">Tools: how an AI acts in the world</h2>
+  <p>On its own an AI can only produce text. It cannot check a calendar, calculate reliably, look at a website or send an email. A <strong>tool</strong> fixes that. A tool is a small function in your app that you describe to the AI: its name, what it does, and what information it needs.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: phone a friend</span>
+    You are in a quiz show and do not know the answer, so you phone a friend. The AI cannot make the call itself. It says &ldquo;please phone the calculator and ask for 1234 times 5678.&rdquo; Your app makes the call and reads back the result.
+  </div>
+  <div class="callout big">The model asks. Your app acts.</div>
+  <p>The AI never runs a tool. It writes a structured request: <em>call this tool with these inputs</em>. Your app runs the tool and sends the result back. Then the AI writes the final answer using that result.</p>
+  <div class="demo" data-widget="loop"></div>
+  <details>
+    <summary>For the curious: what a tool call looks like in code</summary>
+    <p>This is the list of messages for the example above. The AI's request arrives as a JSON string, which your app must read.</p>
+    <div class="codebox"><pre><code>[
+  {"role": "user", "content": "What is 1234 times 5678?"},
+  {"role": "assistant", "content": null, "tool_calls": [
+    {"id": "call_1", "type": "function",
+     "function": {"name": "calculator", "arguments": "{\"expression\": \"1234 * 5678\"}"}}
+  ]},
+  {"role": "tool", "tool_call_id": "call_1", "content": "7006652"},
+  {"role": "assistant", "content": "1234 times 5678 is 7,006,652."}
+]</code></pre></div>
+    <p>Not every AI model supports tools. When you choose a model for tool work, look for one that says it does.</p>
+  </details>
+
+  <h2 id="loop">The agent loop</h2>
+  <p>Put it together. An <strong>agent</strong> repeats four steps until the goal is met:</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 240" role="img" aria-label="The agent loop: decide, act, observe, continue, and go round again until the goal is met">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <rect x="15" y="30" width="135" height="64" rx="10" class="dg-box"/><text x="82" y="57" text-anchor="middle" class="dg-t">1. Decide</text><text x="82" y="77" text-anchor="middle" class="dg-s">what to do next</text>
+      <rect x="175" y="30" width="135" height="64" rx="10" class="dg-hot"/><text x="242" y="57" text-anchor="middle" class="dg-t">2. Act</text><text x="242" y="77" text-anchor="middle" class="dg-s">call a tool</text>
+      <rect x="335" y="30" width="135" height="64" rx="10" class="dg-box"/><text x="402" y="57" text-anchor="middle" class="dg-t">3. Observe</text><text x="402" y="77" text-anchor="middle" class="dg-s">read the result</text>
+      <rect x="495" y="30" width="135" height="64" rx="10" class="dg-box"/><text x="562" y="57" text-anchor="middle" class="dg-t">4. Continue?</text><text x="562" y="77" text-anchor="middle" class="dg-s">goal met yet?</text>
+      <path d="M150 62H172" class="dg-l" marker-end="url(#ah)"/><path d="M310 62H332" class="dg-l" marker-end="url(#ah)"/><path d="M470 62H492" class="dg-l" marker-end="url(#ah)"/>
+      <path d="M562 94V165H82V97" class="dg-la" marker-end="url(#ah)"/>
+      <text x="325" y="152" text-anchor="middle" class="dg-s">not yet: go round again</text>
+      <text x="325" y="205" text-anchor="middle" class="dg-t">When the goal is met, the AI stops and writes the answer.</text>
+    </svg>
+    <figcaption>The agent loop. Tools are the core idea behind agents.</figcaption>
+  </figure>
+  <div class="callout warn">
+    <span class="label">Always set a limit</span>
+    Good apps cap how many times the loop can run, say five rounds. Otherwise a confused AI could keep going forever, and you would pay for every round.
+  </div>
+  <p>Later in the course you will meet <strong>MCP</strong> (Lesson 18), a standard way to share tools between applications. It builds directly on this idea.</p>
+
+  <h2 id="exercise">Your exercise: prove the memory is an illusion</h2>
+  <p>The goal is to see with your own eyes that the AI only knows what is re-sent. Choose either version.</p>
+  <h3>Version A, no code: be the AI</h3>
+  <p>Work in pairs. One person plays the <strong>app</strong>, the other plays the <strong>AI</strong>.</p>
+  <ol class="steps">
+    <li>The app writes each message on its own card: &ldquo;Hi, my name is Wanjiru and my favourite fruit is pineapple.&rdquo; is card 1.</li>
+    <li>Add five more cards, for example: a Python question, a library name, what an API does, a study tip, and finally <strong>&ldquo;What is my name and favourite fruit?&rdquo;</strong></li>
+    <li><strong>Round 1, full history.</strong> The app hands the AI <em>all</em> the cards. The AI answers the last question using only the cards it was given.</li>
+    <li><strong>Round 2, trimmed history.</strong> The app hands over only the <strong>last four cards</strong>. Ask the same final question.</li>
+    <li>Swap roles and repeat with different facts.</li>
+  </ol>
+  <h3>Version B, with code</h3>
+  <p>This chat loop re-sends the history on every turn. First run it with <code>MAX_MESSAGES = None</code> and tell it your name in the first message. Later ask &ldquo;What is my name?&rdquo; Then set <code>MAX_MESSAGES = 6</code> and run the same test.</p>
+  <div class="codebox"><pre><code>import os
+import requests
+
+API_KEY = os.environ["OPENROUTER_API_KEY"]
+URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL = "MODEL_ID"
+SYSTEM = {"role": "system", "content": "You are a friendly assistant. Keep answers to two sentences."}
+
+MAX_MESSAGES = None   # try None first, then 6
+
+def ask(messages):
+    resp = requests.post(
+        URL,
+        headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
+        json={"model": MODEL, "temperature": 0, "messages": messages},
+        timeout=60,
+    )
+    return resp.json()["choices"][0]["message"]["content"].strip()
+
+history = []
+print("Type quit to stop.")
+while True:
+    text = input("You: ").strip()
+    if text.lower() == "quit":
+        break
+    history.append({"role": "user", "content": text})
+    window = history if MAX_MESSAGES is None else history[-MAX_MESSAGES:]
+    reply = ask([SYSTEM] + window)     # the system prompt is added fresh every time
+    history.append({"role": "assistant", "content": reply})
+    print("AI:", reply)</code></pre></div>
+  <p><strong>Hand in:</strong> both final answers, and a short explanation in your own words of why the second one forgot. A strong answer also notices the cost: sending the full history uses more tokens on every turn.</p>
+
+  <h2 id="mistakes">Common mistakes</h2>
+  <ul>
+    <li>Thinking the AI learns from the chat. It does not change between calls.</li>
+    <li>Trimming by message count while a few very long messages still overflow the desk.</li>
+    <li>Cutting the system prompt when trimming. Always add it fresh.</li>
+    <li>Believing the AI runs the tool itself.</li>
+    <li>Forgetting a limit on how many loop rounds are allowed.</li>
+  </ul>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. Why does a chat seem to remember what you said earlier?</p>
+      <div class="opts">
+        <button type="button" class="opt">The AI stores your messages in its brain</button>
+        <button type="button" class="opt" data-correct>The app re-sends the whole conversation every turn</button>
+        <button type="button" class="opt">The AI learns from each message</button>
+      </div>
+      <p class="why">The AI is stateless. The app supplies the memory by re-sending the history.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. If the app stops sending message 1, what does the AI know about it?</p>
+      <div class="opts">
+        <button type="button" class="opt">A summary, which it keeps privately</button>
+        <button type="button" class="opt">Whatever it can guess</button>
+        <button type="button" class="opt" data-correct>Nothing</button>
+      </div>
+      <p class="why">The AI only sees what is in the current call.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. A long conversation no longer fits the context window. Which is NOT a standard strategy?</p>
+      <div class="opts">
+        <button type="button" class="opt">Trim the oldest messages</button>
+        <button type="button" class="opt">Summarise old messages</button>
+        <button type="button" class="opt" data-correct>Ask the AI to remember it harder</button>
+        <button type="button" class="opt">Store facts outside and retrieve them when needed</button>
+      </div>
+      <p class="why">Trimming, summarising and storing-and-retrieving are the three strategies. Memory is not something the AI can try harder at.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. Who actually runs a tool in an agent?</p>
+      <div class="opts">
+        <button type="button" class="opt">The AI model</button>
+        <button type="button" class="opt" data-correct>Your app</button>
+        <button type="button" class="opt">The user</button>
+      </div>
+      <p class="why">The model asks for a tool in a structured request. The app runs it and returns the result.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Which sequence is the agent loop?</p>
+      <div class="opts">
+        <button type="button" class="opt">Read, forget, guess, repeat</button>
+        <button type="button" class="opt">Ask, wait, apologise, stop</button>
+        <button type="button" class="opt" data-correct>Decide, act with a tool, observe the result, continue until the goal is met</button>
+      </div>
+      <p class="why">That four-step loop is the heart of every agent.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Stateless</dt><dd>Keeping nothing between calls. An AI model is stateless; the app supplies the memory.</dd>
+    <dt>Conversation history</dt><dd>The list of earlier messages that the app re-sends on each turn.</dd>
+    <dt>Context window</dt><dd>The fixed token limit for one call. Instructions, history, tool results and the reply all count.</dd>
+    <dt>Summarise</dt><dd>Replace old messages with a short recap to save space.</dd>
+    <dt>Tool</dt><dd>A function in your app that the AI can ask for, such as a calculator or a search.</dd>
+    <dt>Tool call</dt><dd>A structured request from the AI saying which tool to run and with what inputs.</dd>
+    <dt>Agent loop</dt><dd>The repeating cycle of decide, act with a tool, observe the result, and continue until the goal is met.</dd>
+    <dt>Agent</dt><dd>An AI that runs tools in a loop to reach a goal.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>A chat only seems to remember. The app re-sends the whole conversation each time.</li>
+    <li>The context window is a desk. Decide what to keep, summarise or drop.</li>
+    <li>A tool call is a structured request: the model asks, your app acts, and the result goes back.</li>
+    <li>An agent runs that cycle in a loop until the goal is met, with a safety limit.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 5, the Week 1 project: build a small assistant that remembers facts, uses two tools only when needed, and passes a 20-prompt test.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-3.html">&larr; Lesson 3</a>
+    <button type="button" class="secondary mid-btn" data-done="4">Mark this lesson as done</button>
+    <a class="btn" href="lesson-5.html">Lesson 5 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

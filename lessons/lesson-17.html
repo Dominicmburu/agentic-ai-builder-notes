@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 17: Advanced integrations | Agentic AI Builder</title>
+  <meta name="description" content="Send data with POST, split work into sub-workflows, and handle errors without panic.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#auth">Recap: choosing authentication</a></li>
+    <li><a href="#http">The HTTP Request node</a></li>
+    <li><a href="#sub">Sub-workflows: small pieces you can reuse</a></li>
+    <li><a href="#errors">Planning for failure</a></li>
+    <li><a href="#test">Test your error handling on purpose</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 4 · Lesson 17 · Integration</p>
+  <h1>Advanced integrations</h1>
+  <p class="lead">Send data with POST, split work into sub-workflows, and handle errors without panic.</p>
+  <div class="meta">
+    <span class="pill">About 50 minutes to read</span>
+    <span class="pill integration">Integration</span>
+    <a class="pill" href="../downloads/Lesson17_Advanced_Integrations.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">Real workflows must survive real life: services go down, replies come back wrong, and a workflow grows too big to read. This lesson gives you three habits: call APIs properly, split big workflows into small ones, and plan for failure.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Pick the right authentication and send a POST request with JSON from n8n.</li>
+    <li>Split a large workflow into reusable sub-workflows.</li>
+    <li>Add retries and an error branch so failures are handled, not hidden.</li>
+  </ul>
+
+  <h2 id="auth">Recap: choosing authentication</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Pattern</th><th>When to use it</th></tr></thead>
+    <tbody>
+      <tr><td>API key</td><td>The service gives you a key. Simplest. Store it in an n8n credential.</td></tr>
+      <tr><td>Pre-configured OAuth2</td><td>n8n has a built-in login for the service (Google Sheets, Gmail). Click and approve.</td></tr>
+      <tr><td>Custom OAuth2</td><td>The service offers only OAuth2 and n8n has no ready login. You register an app yourself.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Always try the easiest that the service supports.</p>
+
+  <h2 id="http">The HTTP Request node</h2>
+  <p>If n8n has no ready-made node for a service, the <strong>HTTP Request</strong> node can call any web API. You already did this by hand in Lesson 1.</p>
+  <ol class="steps">
+    <li>Set the <strong>method</strong> (GET to fetch, POST to send).</li>
+    <li>Paste the <strong>URL</strong> from the service's documentation.</li>
+    <li>Choose <strong>authentication</strong> and pick a saved credential. Do not type keys into the node.</li>
+    <li>For POST, switch on <strong>Send Body</strong>, choose JSON, and fill in the fields the documentation asks for.</li>
+  </ol>
+  <div class="codebox"><span class="label">An example JSON body</span><pre><code>{
+  "name": "{{ $json.name }}",
+  "email": "{{ $json.email }}",
+  "message": "{{ $json.summary }}"
+}</code></pre></div>
+  <p>The double curly braces are expressions from Lesson 9. They fill in the real values for each item.</p>
+  <div class="callout">
+    <span class="label">Read the documentation of the service</span>
+    Every API has its own address, field names and rules. Copy them exactly from the service's current documentation. A single wrong field name gives an error.
+  </div>
+
+  <h2 id="sub">Sub-workflows: small pieces you can reuse</h2>
+  <p>A workflow with fifty boxes is hard to read and harder to fix. Move a repeated or self-contained job into its own workflow, then call it from the main one with the <strong>Execute Workflow</strong> node.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a recipe card</span>
+    A big cookbook says &ldquo;make the sauce (page 12)&rdquo; instead of repeating the sauce steps in every recipe. A sub-workflow is page 12.
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 170" role="img" aria-label="A main workflow calls a sub-workflow named Send alert. The sub-workflow does the job and returns a result to the main workflow.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <text x="10" y="20" class="dg-h">MAIN WORKFLOW</text>
+      <rect x="10" y="32" width="120" height="56" rx="10" class="dg-box"/><text x="70" y="65" text-anchor="middle" class="dg-t">Trigger</text>
+      <rect x="170" y="32" width="150" height="56" rx="10" class="dg-hot"/><text x="245" y="58" text-anchor="middle" class="dg-t">Execute Workflow</text><text x="245" y="76" text-anchor="middle" class="dg-s">call 'Send alert'</text>
+      <rect x="360" y="32" width="120" height="56" rx="10" class="dg-box"/><text x="420" y="65" text-anchor="middle" class="dg-t">Carry on</text>
+      <path d="M130 60H167" class="dg-l" marker-end="url(#ah)"/><path d="M320 60H357" class="dg-l" marker-end="url(#ah)"/>
+      <text x="10" y="120" class="dg-h">SUB-WORKFLOW: SEND ALERT</text>
+      <rect x="10" y="130" width="120" height="30" rx="8" class="dg-soft"/><text x="70" y="150" text-anchor="middle" class="dg-s">starts when called</text>
+      <rect x="170" y="130" width="150" height="30" rx="8" class="dg-soft"/><text x="245" y="150" text-anchor="middle" class="dg-s">format + send</text>
+      <rect x="360" y="130" width="120" height="30" rx="8" class="dg-soft"/><text x="420" y="150" text-anchor="middle" class="dg-s">return result</text>
+      <path d="M245 92V126" class="dg-la" marker-end="url(#ah)"/>
+    </svg>
+    <figcaption>The main workflow stays short. The details live in one place.</figcaption>
+  </figure>
+  <ol class="steps">
+    <li>Create a new workflow and start it with the <strong>Execute Workflow Trigger</strong> node. Build the job after it.</li>
+    <li>In the main workflow add <strong>Execute Workflow</strong> and choose the sub-workflow.</li>
+    <li>Pass the data it needs as inputs, and read what it returns.</li>
+  </ol>
+  <p>Benefits: one fix updates every place that uses it, you can test the piece on its own, and agents can use sub-workflows as tools (Lesson 19).</p>
+
+  <h2 id="errors">Planning for failure</h2>
+  <p>Things go wrong: a service is down, a limit is reached, a field is missing. Three tools help.</p>
+  <div class="cards">
+    <div class="card"><h3>1. Retry on fail</h3><p>In a node's settings, switch on <strong>Retry On Fail</strong>, and set how many tries and how long to wait. Good for short outages.</p></div>
+    <div class="card"><h3>2. Continue on error</h3><p>Setting for a node: <strong>On Error</strong>, choose to continue using the error output. The workflow takes an error branch instead of stopping.</p></div>
+    <div class="card"><h3>3. Error workflow</h3><p>A separate workflow that starts whenever any workflow fails, and alerts you. Use the <strong>Error Trigger</strong> node.</p></div>
+  </div>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a delivery</span>
+    If nobody answers the door, the courier tries again later (retry). If it still fails, they leave a note and carry on with other parcels (error branch). The depot manager gets a report of every failed delivery (error workflow).
+  </div>
+  <div class="callout warn">
+    <span class="label">Do not retry blindly</span>
+    Retrying is safe for reading data. It can be dangerous for actions like sending money or emails, because a retry may do the action twice. Think about what repeating the step would do.
+  </div>
+
+  <h2 id="test">Test your error handling on purpose</h2>
+  <p>A free testing site, <code>httpbin.org</code>, will answer with whatever status code you ask for:</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>URL</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>https://httpbin.org/status/500</code></td><td>Always fails with a server error (500)</td></tr>
+      <tr><td><code>https://httpbin.org/status/429</code></td><td>Says &ldquo;too many requests&rdquo; (429)</td></tr>
+      <tr><td><code>https://httpbin.org/status/200</code></td><td>Succeeds (200)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Point an HTTP Request node at the 500 address, switch on retries and an error branch, and watch what happens. Then point it at the 200 address and check that the normal path still works.</p>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>Build a workflow that sends data to an API with POST, uses a sub-workflow for one step, and handles a failure by logging it and carrying on.</p>
+  <ol class="steps">
+    <li>HTTP Request node: POST a small JSON body to <code>https://httpbin.org/post</code> (a safe test address that echoes what you send).</li>
+    <li>Move the step that formats the message into a sub-workflow, and call it.</li>
+    <li>Add a second HTTP Request to <code>https://httpbin.org/status/500</code> with retries on and an error branch.</li>
+    <li>On the error branch, write a row to a sheet, or set a field such as <code>failed: true</code>, so the failure is recorded.</li>
+  </ol>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="post"> The POST succeeded and I can see my JSON echoed back</label>
+    <label class="check"><input type="checkbox" data-check="sub"> One step lives in a sub-workflow and the main workflow calls it</label>
+    <label class="check"><input type="checkbox" data-check="retry"> Retry on fail is on and I watched it retry the 500</label>
+    <label class="check"><input type="checkbox" data-check="branch"> The failure took the error branch and was recorded</label>
+    <label class="check"><input type="checkbox" data-check="ok"> The 200 path still works normally</label>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>401 or 403</td><td>The key is missing, wrong or lacks permission.</td></tr>
+      <tr><td>400 or 422</td><td>The JSON body is wrong: a missing or misspelled field.</td></tr>
+      <tr><td>429</td><td>You are sending too fast. Slow down or add a wait.</td></tr>
+      <tr><td>The sub-workflow returns nothing</td><td>Its last node did not output data, or the wrong workflow was selected.</td></tr>
+      <tr><td>The error branch never fires</td><td>The node's On Error setting is still &ldquo;stop workflow&rdquo;.</td></tr>
+      <tr><td>The same email went out twice</td><td>A retry repeated an action. Do not retry actions that cannot be repeated.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. Which node can call almost any web API?</p>
+      <div class="opts">
+        <button type="button" class="opt">Edit Fields</button>
+        <button type="button" class="opt">Respond to Webhook</button>
+        <button type="button" class="opt" data-correct>HTTP Request</button>
+      </div>
+      <p class="why">When there is no ready-made node, HTTP Request does the job.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. Why use a sub-workflow?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>To keep workflows short, reuse a job in many places and test it on its own</button>
+        <button type="button" class="opt">To make workflows run slower</button>
+        <button type="button" class="opt">Because n8n cannot run big workflows</button>
+      </div>
+      <p class="why">It is the recipe-card idea: write it once, refer to it.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. Which setting makes a node try again after a failure?</p>
+      <div class="opts">
+        <button type="button" class="opt">Always Output Data</button>
+        <button type="button" class="opt" data-correct>Retry On Fail</button>
+        <button type="button" class="opt">Execute Once</button>
+      </div>
+      <p class="why">Retries help with short outages.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. What is risky about retrying a step that sends an email?</p>
+      <div class="opts">
+        <button type="button" class="opt">It makes the email longer</button>
+        <button type="button" class="opt">It deletes the draft</button>
+        <button type="button" class="opt" data-correct>It may send the email twice</button>
+      </div>
+      <p class="why">Retries are safe for reading and risky for actions that cannot be repeated.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. What does the Error Trigger node start?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>A separate workflow that runs when another workflow fails</button>
+        <button type="button" class="opt">The next lesson</button>
+        <button type="button" class="opt">A backup of the database</button>
+      </div>
+      <p class="why">It is the depot manager who gets a report of every failure.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>HTTP Request node</dt><dd>An n8n node that calls any web API.</dd>
+    <dt>Request body</dt><dd>The data sent along with a POST request, usually JSON.</dd>
+    <dt>Status code</dt><dd>A number in the reply that says how it went: 200 worked, 4xx your mistake, 5xx their problem.</dd>
+    <dt>Sub-workflow</dt><dd>A workflow called by another workflow, like a reusable recipe card.</dd>
+    <dt>Execute Workflow</dt><dd>The n8n node that runs another workflow.</dd>
+    <dt>Retry On Fail</dt><dd>A node setting that tries the step again after an error.</dd>
+    <dt>Error branch</dt><dd>A path the workflow takes when a node fails, instead of stopping.</dd>
+    <dt>Error Trigger</dt><dd>The start node of a workflow that runs when another workflow fails.</dd>
+    <dt>Rate limit (429)</dt><dd>A service telling you that you are sending too many requests.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>Use the easiest authentication the service offers, and keep keys in credentials. HTTP Request with a JSON body covers services without a ready-made node.</li>
+    <li>Split big workflows into sub-workflows you can reuse and test separately.</li>
+    <li>Plan for failure: retries for short outages, error branches to carry on, and an error workflow to alert you. Never blindly retry actions that cannot be repeated.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 18, MCP: a standard plug that lets agents use outside tools without custom wiring.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-16.html">&larr; Lesson 16</a>
+    <button type="button" class="secondary mid-btn" data-done="17">Mark this lesson as done</button>
+    <a class="btn" href="lesson-18.html">Lesson 18 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

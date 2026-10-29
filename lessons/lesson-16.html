@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 16: Self-hosted n8n and local models | Agentic AI Builder</title>
+  <meta name="description" content="Run n8n and an AI model on your own computer, and know when that is worth it.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#why">Why run things yourself?</a></li>
+    <li><a href="#n8n-local">Run n8n on your computer</a></li>
+    <li><a href="#ollama">Run a model on your computer with Ollama</a></li>
+    <li><a href="#connect">Connect n8n to Ollama</a></li>
+    <li><a href="#tunnel">Letting the outside world reach your n8n</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 4 · Lesson 16 · Core</p>
+  <h1>Self-hosted n8n and local models</h1>
+  <p class="lead">Run n8n and an AI model on your own computer, and know when that is worth it.</p>
+  <div class="meta">
+    <span class="pill">About 50 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson16_Self_Hosted_n8n_and_Local_Models.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">So far you used n8n and models that live on other companies' computers. You can also run both on your own machine. You gain privacy and control. You take on setup, updates and a slower model.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Explain the trade-offs of cloud versus self-hosted n8n and of cloud versus local models.</li>
+    <li>Run n8n locally with Docker or with npx.</li>
+    <li>Run a small model with Ollama and use it from an n8n agent.</li>
+  </ul>
+
+  <h2 id="why">Why run things yourself?</h2>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: eating out or cooking at home</span>
+    A restaurant (cloud) is quick, someone else does the work, and you pay per meal. Cooking at home (self-hosted) gives you full control over ingredients and nobody sees what you eat, but you buy the equipment, shop, and wash up.
+  </div>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th></th><th>Cloud</th><th>Self-hosted / local</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Setup</strong></td><td>Sign up and go</td><td>Install and configure</td></tr>
+      <tr><td><strong>Privacy</strong></td><td>Data goes to another company's servers</td><td>Data can stay on your machine</td></tr>
+      <tr><td><strong>Cost</strong></td><td>Subscription or per use</td><td>Free software, but you pay in electricity, hardware and time</td></tr>
+      <tr><td><strong>Quality of model</strong></td><td>Strongest models available</td><td>Smaller models. Good for simple jobs, weaker for hard ones</td></tr>
+      <tr><td><strong>Speed</strong></td><td>Fast</td><td>Depends on your computer. Can be slow without a good graphics card</td></tr>
+      <tr><td><strong>Upkeep</strong></td><td>The provider updates and backs up</td><td>You update, back up and fix</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="n8n-local">Run n8n on your computer</h2>
+  <p>There are two common ways. Pick one.</p>
+  <h3>Option 1: Docker</h3>
+  <p><strong>Docker</strong> runs programs in sealed boxes called containers, so they do not mess up your computer. Install Docker Desktop first, then run:</p>
+  <div class="codebox"><span class="label">terminal</span><pre><code>docker volume create n8n_data
+docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n</code></pre></div>
+  <p>Then open <code>http://localhost:5678</code> in your browser. The <code>-v n8n_data:...</code> part saves your workflows. Without it, they vanish when the container stops.</p>
+  <h3>Option 2: npx</h3>
+  <p>If you have Node.js installed, one line is enough:</p>
+  <div class="codebox"><span class="label">terminal</span><pre><code>npx n8n</code></pre></div>
+  <p>It downloads n8n and starts it on the same address. Docker is better for something you keep running. npx is quicker for trying it out.</p>
+  <div class="callout warn">
+    <span class="label">Back up before you rely on it</span>
+    Your workflows and credentials live on your computer now. If the disk dies, so do they. Export important workflows as files and keep a copy elsewhere.
+  </div>
+
+  <h2 id="ollama">Run a model on your computer with Ollama</h2>
+  <p><strong>Ollama</strong> is a free program that downloads open models and runs them locally.</p>
+  <ol class="steps">
+    <li>Install Ollama from its website.</li>
+    <li>Download a small model. Start small, because bigger models need more memory:
+      <div class="codebox"><span class="label">terminal</span><pre><code>ollama pull llama3.2</code></pre></div>
+    </li>
+    <li>Try it in the terminal: <code>ollama run llama3.2</code>. Type a question and press Enter.</li>
+    <li>Ollama also runs a small server at <code>http://localhost:11434</code> that other programs, such as n8n, can talk to.</li>
+  </ol>
+  <div class="callout">
+    <span class="label">Model names change</span>
+    Model names and sizes change often. Look at the Ollama library for what is available now, and choose a small one if your computer has less than 16 GB of memory.
+  </div>
+
+  <h2 id="connect">Connect n8n to Ollama</h2>
+  <ol class="steps">
+    <li>In your agent, replace the chat model with the <strong>Ollama Chat Model</strong> node.</li>
+    <li>Create an Ollama credential. The <strong>base URL</strong> depends on where n8n runs:</li>
+  </ol>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Where n8n runs</th><th>Base URL to use</th></tr></thead>
+    <tbody>
+      <tr><td>Directly on your computer (npx)</td><td><code>http://localhost:11434</code></td></tr>
+      <tr><td>Inside Docker, Ollama on the computer</td><td><code>http://host.docker.internal:11434</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Why the difference? Inside a Docker box, &ldquo;localhost&rdquo; means the box itself, not your computer. <code>host.docker.internal</code> is the name for &ldquo;the computer that is running this box&rdquo;. On some Linux setups you may also need to add a flag so this name works.</p>
+  <ol class="steps" start="3">
+    <li>Choose the model name you pulled, for example <code>llama3.2</code>.</li>
+    <li>Run your agent and compare the answer to the cloud model.</li>
+  </ol>
+  <div class="callout">
+    <span class="label">Tool use can be weaker</span>
+    Small local models are often worse at using tools. If your agent ignores a tool it could use, try a larger model or a model that is described as supporting tools.
+  </div>
+
+  <h2 id="tunnel">Letting the outside world reach your n8n</h2>
+  <p>A webhook on your own computer has an address like <code>localhost</code>, which only your computer can see. ElevenLabs cannot call it. A <strong>tunnel</strong> such as <strong>ngrok</strong> gives your local n8n a temporary public address.</p>
+  <div class="codebox"><span class="label">terminal</span><pre><code>ngrok http 5678</code></pre></div>
+  <p>ngrok prints an address that starts with <code>https://</code>. Tell n8n to use it for its webhook addresses by setting the <code>WEBHOOK_URL</code> setting when you start n8n:</p>
+  <div class="codebox"><span class="label">terminal</span><pre><code>docker run -it --rm --name n8n -p 5678:5678 \
+  -e WEBHOOK_URL=https://YOUR-NGROK-ADDRESS/ \
+  -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n</code></pre></div>
+  <div class="callout warn">
+    <span class="label">A tunnel opens your computer to the internet</span>
+    Anyone with the address can reach your n8n. Use a strong n8n login, secure your webhooks with a secret header, and close the tunnel when you are not using it. Free tunnel addresses usually change every time you restart.
+  </div>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>Run n8n locally, connect a local model, and compare it to a cloud model on the same three questions.</p>
+  <table class="fill-table">
+    <thead><tr><th>Question</th><th>Cloud answer (good? seconds)</th><th>Local answer (good? seconds)</th></tr></thead>
+    <tbody>
+      <tr><td><input name="q1" aria-label="Question 1"></td><td><input name="c1" aria-label="Cloud 1"></td><td><input name="l1" aria-label="Local 1"></td></tr>
+      <tr><td><input name="q2" aria-label="Question 2"></td><td><input name="c2" aria-label="Cloud 2"></td><td><input name="l2" aria-label="Local 2"></td></tr>
+      <tr><td><input name="q3" aria-label="Question 3"></td><td><input name="c3" aria-label="Cloud 3"></td><td><input name="l3" aria-label="Local 3"></td></tr>
+    </tbody>
+  </table>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="n8n"> n8n opens at localhost:5678 and my workflow survives a restart</label>
+    <label class="check"><input type="checkbox" data-check="ollama"> Ollama answers a question in the terminal</label>
+    <label class="check"><input type="checkbox" data-check="connect"> An n8n agent answers using the local model</label>
+    <label class="check"><input type="checkbox" data-check="compare"> I compared quality and speed against a cloud model</label>
+    <label class="check"><input type="checkbox" data-check="tunnel"> Bonus: a tunnel made a webhook reachable from outside</label>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>Port 5678 already in use</td><td>Another n8n is running. Stop it, or use a different port.</td></tr>
+      <tr><td>Workflows gone after restart</td><td>The volume (<code>-v</code>) was missing, so nothing was saved.</td></tr>
+      <tr><td>n8n cannot connect to Ollama</td><td>Wrong base URL for where n8n runs, or Ollama is not running.</td></tr>
+      <tr><td>Model not found</td><td>The name in n8n does not match the one you pulled. Run <code>ollama list</code>.</td></tr>
+      <tr><td>Very slow answers or the computer freezes</td><td>The model is too big for your memory. Choose a smaller one.</td></tr>
+      <tr><td>The webhook address still says localhost</td><td><code>WEBHOOK_URL</code> was not set, or n8n was not restarted.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What is the main benefit of running a model locally?</p>
+      <div class="opts">
+        <button type="button" class="opt">It is always smarter than cloud models</button>
+        <button type="button" class="opt" data-correct>Your data can stay on your own machine</button>
+        <button type="button" class="opt">It is always faster</button>
+      </div>
+      <p class="why">Privacy and control are the reasons. Small local models are usually weaker.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. Why does the docker run command include -v n8n_data:/home/node/.n8n?</p>
+      <div class="opts">
+        <button type="button" class="opt">To make n8n faster</button>
+        <button type="button" class="opt">To connect to Ollama</button>
+        <button type="button" class="opt" data-correct>So your workflows are saved when the container stops</button>
+      </div>
+      <p class="why">Without a volume, the data disappears with the container.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. n8n runs inside Docker and Ollama runs on your computer. Which base URL do you use?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>http://host.docker.internal:11434</button>
+        <button type="button" class="opt">http://localhost:11434</button>
+        <button type="button" class="opt">http://example.com</button>
+      </div>
+      <p class="why">Inside the box, localhost means the box itself. host.docker.internal means the computer.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. What does a tunnel such as ngrok do?</p>
+      <div class="opts">
+        <button type="button" class="opt">Makes the model smarter</button>
+        <button type="button" class="opt" data-correct>Gives your local n8n a temporary public address</button>
+        <button type="button" class="opt">Backs up your workflows</button>
+      </div>
+      <p class="why">It lets outside services, such as a voice agent, reach your local webhook.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Which is a real cost of self-hosting?</p>
+      <div class="opts">
+        <button type="button" class="opt">You must pay per message</button>
+        <button type="button" class="opt">Nobody can ever reach your n8n</button>
+        <button type="button" class="opt" data-correct>You do the updates, backups and fixes yourself</button>
+      </div>
+      <p class="why">Control comes with responsibility.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Self-hosted</dt><dd>Running software on a computer you control instead of the provider's servers.</dd>
+    <dt>Docker</dt><dd>A tool that runs programs in sealed boxes called containers.</dd>
+    <dt>Container</dt><dd>A sealed box holding a program and everything it needs.</dd>
+    <dt>Volume</dt><dd>A place outside the container where data is saved so it survives restarts.</dd>
+    <dt>npx</dt><dd>A Node.js command that downloads and runs a tool in one step.</dd>
+    <dt>Ollama</dt><dd>A free program that downloads and runs open AI models on your computer.</dd>
+    <dt>Local model</dt><dd>An AI model running on your own machine.</dd>
+    <dt>localhost</dt><dd>The address that means 'this computer'.</dd>
+    <dt>Tunnel (ngrok)</dt><dd>A service that gives a program on your computer a temporary public web address.</dd>
+    <dt>WEBHOOK_URL</dt><dd>An n8n setting that tells it which public address to show for webhooks.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>Self-hosting trades convenience for privacy and control. You handle setup, updates and backups.</li>
+    <li>n8n runs locally with Docker (use a volume) or npx. Ollama runs models locally. The base URL depends on whether n8n is inside Docker.</li>
+    <li>Local models are usually smaller and slower, and weaker with tools. A tunnel exposes your local webhooks, so secure them.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 17, advanced integrations: sending data with POST, splitting work into sub-workflows, and handling errors gracefully.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-15.html">&larr; Lesson 15</a>
+    <button type="button" class="secondary mid-btn" data-done="16">Mark this lesson as done</button>
+    <a class="btn" href="lesson-17.html">Lesson 17 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

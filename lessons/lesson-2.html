@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 2: Tokens: how an AI reads, and why it matters | Agentic AI Builder</title>
+  <meta name="description" content="Tokenization and how generation works, in plain language.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#tokens">What is a token?</a></li>
+    <li><a href="#rule">The four-characters rule</a></li>
+    <li><a href="#why">Why tokens matter: cost, speed and limits</a></li>
+    <li><a href="#generation">How the AI picks each token</a></li>
+    <li><a href="#temperature">Temperature: the creativity dial</a></li>
+    <li><a href="#hallucination">Fluent is not the same as true</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 1 · Lesson 2 · Core</p>
+  <h1>Tokens: how an AI reads, and why it matters</h1>
+  <p class="lead">Tokenization and how generation works, in plain language.</p>
+  <div class="meta">
+    <span class="pill">About 40 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson2_Tokens_and_Temperature.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">An AI does not read words. It reads small chunks called tokens, and it writes one token at a time. Tokens decide what you pay, how fast you get an answer, and how much the AI can handle at once.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Explain what a token is and estimate how many are in a piece of text.</li>
+    <li>Explain why the number of tokens drives cost, speed and limits.</li>
+    <li>Explain temperature, the dial that makes an AI predictable or adventurous.</li>
+  </ul>
+
+  <h2 id="tokens">What is a token?</h2>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: Lego bricks</span>
+    You can build a sentence out of whole words, like big Lego blocks. An AI builds it from small bricks instead. Common words are usually one brick. Rare or long words are snapped from several bricks. Spaces, punctuation and numbers are bricks too.
+  </div>
+  <p>A word like <em>tea</em> is probably one token. A long or unusual word such as <em>unbelievable</em> might be split into a few pieces. The exact splits are different for each AI family, so do not memorise them. Just remember: <strong>tokens are the units the AI counts in</strong>.</p>
+  <div class="callout">
+    <span class="label">Why does this matter to you?</span>
+    Everything is priced and limited in tokens, not words. Even the thing you type and the answer you get back are measured this way.
+  </div>
+
+  <h2 id="rule">The four-characters rule</h2>
+  <p>For ordinary English, one token is about <strong>four characters</strong>, or roughly three-quarters of a word. So 100 tokens is around 75 words.</p>
+  <div class="callout warn">
+    <span class="label">It is only an estimate</span>
+    The rule changes with the language, with code, and with the model. Swahili, Arabic, Chinese and computer code usually need <strong>more</strong> tokens for the same meaning. That means the same message can cost more in some languages.
+  </div>
+  <div class="demo" data-widget="tokens"></div>
+
+  <h2 id="why">Why tokens matter: cost, speed and limits</h2>
+  <div class="cards">
+    <div class="card"><h3>Cost</h3><p>Like phone airtime. You pay for tokens you send (input) and tokens the AI writes (output). The two often have different prices.</p></div>
+    <div class="card"><h3>Speed</h3><p>The AI writes one token at a time, like someone typing. A long answer takes longer than a short one.</p></div>
+    <div class="card"><h3>Limits</h3><p>The context window is the AI's suitcase. Everything you send plus the answer must fit inside it.</p></div>
+  </div>
+  <h3>A worked cost example</h3>
+  <p>Say a model charges <strong>$1 per million input tokens</strong> and <strong>$4 per million output tokens</strong>. You send 2,000 tokens and get 500 back.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Part</th><th>Sum</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td>Input</td><td>2,000 / 1,000,000 &times; $1</td><td>$0.002</td></tr>
+      <tr><td>Output</td><td>500 / 1,000,000 &times; $4</td><td>$0.002</td></tr>
+      <tr><td><strong>One call</strong></td><td></td><td><strong>$0.004</strong></td></tr>
+      <tr><td>10,000 such calls</td><td>$0.004 &times; 10,000</td><td><strong>$40</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Tiny for one call, real money at scale. This is why builders care about keeping prompts short and choosing the right model.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: the suitcase</span>
+    The context window is like an airline luggage limit. Your question, the earlier conversation and the answer all share one suitcase. If it is full, something has to be left behind.
+  </div>
+
+  <h2 id="generation">How the AI picks each token</h2>
+  <p>Last lesson you saw that an AI guesses what comes next. Here is the detail. At every step, the AI works out a <strong>probability for every possible next token</strong>, like a scoreboard. Then it picks one, adds it, and repeats.</p>
+  <p>For <em>I would like a cup of ...</em> the scoreboard might look like: tea 46%, coffee 41%, water 7%, and a long tail of other words with tiny chances. There is no plan and no fact lookup. Each pick comes from the scoreboard.</p>
+
+  <h2 id="temperature">Temperature: the creativity dial</h2>
+  <p><strong>Temperature</strong> is a setting that reshapes the scoreboard before the pick.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Setting</th><th>What happens</th><th>Good for</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Low</strong> (0 to 0.3)</td><td>Nearly always picks the favourite. Predictable, repeatable.</td><td>Sorting emails, pulling out facts, anything a program must read</td></tr>
+      <tr><td><strong>High</strong> (0.8 and above)</td><td>Gives long shots a real chance. Varied and surprising.</td><td>Slogans, brainstorming, stories</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: ordering lunch</span>
+    Low temperature is the person who orders the same meal every time. High temperature is the person who tries something new each visit.
+  </div>
+  <div class="demo" data-widget="temperature"></div>
+  <div class="callout warn">
+    <span class="label">Two common mistakes</span>
+    <strong>Low temperature does not mean correct.</strong> An AI can be consistently wrong. And even at 0, two runs are not guaranteed to be identical. Also, some reasoning models ignore this setting.
+  </div>
+
+  <h2 id="hallucination">Fluent is not the same as true</h2>
+  <p>Remember: wrong answers are produced in exactly the same way as right ones. The AI picks likely tokens, and nothing in that process checks the facts. That is why it can sound confident and still be wrong. You will learn ways to reduce this later in the course: giving the AI your own documents (Week 3) and testing its output (every project).</p>
+
+  <h2 id="exercise">Your exercise</h2>
+  <h3>Part 1: count tokens</h3>
+  <ol class="steps">
+    <li>Search for an online <strong>tokenizer</strong> tool. OpenAI offers a free one, and there are others.</li>
+    <li>Paste in <strong>an English paragraph</strong>. Write down the characters and the tokens.</li>
+    <li>Paste in <strong>a code snippet</strong> (any few lines). Write down the numbers.</li>
+    <li>Paste in <strong>a sentence in another language</strong> you know. Write down the numbers.</li>
+    <li>Work out characters per token for each.</li>
+  </ol>
+  <div class="table-scroll">
+  <table class="fill-table">
+    <thead><tr><th>Text</th><th>Characters</th><th>Tokens</th><th>Characters per token</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">English paragraph</th><td><input name="en-c" aria-label="English characters"></td><td><input name="en-t" aria-label="English tokens"></td><td><input name="en-r" aria-label="English ratio"></td></tr>
+      <tr><th scope="row">Code snippet</th><td><input name="cd-c" aria-label="Code characters"></td><td><input name="cd-t" aria-label="Code tokens"></td><td><input name="cd-r" aria-label="Code ratio"></td></tr>
+      <tr><th scope="row">Another language</th><td><input name="ot-c" aria-label="Other characters"></td><td><input name="ot-t" aria-label="Other tokens"></td><td><input name="ot-r" aria-label="Other ratio"></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <h3>Part 2: temperature 0 and temperature 1</h3>
+  <p>Pick a chat tool that lets you set the temperature (the OpenRouter chat page has a settings panel for this, and many other tools do too). Send this prompt <strong>three times at temperature 0</strong>, then <strong>three times at temperature 1</strong>, and compare:</p>
+  <div class="callout">&ldquo;Write a one-sentence slogan for a coffee shop in Nairobi.&rdquo;</div>
+  <p><strong>Write two sentences:</strong> what changed between the two settings, and which setting you would use to sort customer emails into categories.</p>
+  <details>
+    <summary>For the curious: do part 2 with a short Python script</summary>
+    <p>This sends the same prompt three times at each temperature. Use a chat model, not a reasoning model.</p>
+    <div class="codebox"><pre><code>import os
+import requests
+
+API_KEY = os.environ["OPENROUTER_API_KEY"]
+URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL = "MODEL_ID"  # copy a chat model name from openrouter.ai/models
+PROMPT = "Write a one-sentence slogan for a coffee shop in Nairobi."
+
+def ask(temperature):
+    resp = requests.post(
+        URL,
+        headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
+        json={"model": MODEL, "temperature": temperature,
+              "messages": [{"role": "user", "content": PROMPT}]},
+        timeout=60,
+    )
+    return resp.json()["choices"][0]["message"]["content"].strip()
+
+for t in (0, 1):
+    print(f"--- temperature {t} ---")
+    for i in range(3):
+        print(f"{i + 1}. {ask(t)}")</code></pre></div>
+    <p>To count tokens in code instead of a website, run <code>pip install tiktoken</code> and use <code>tiktoken.get_encoding("cl100k_base").encode(text)</code>. The length of the result is the token count. Other model families count slightly differently.</p>
+  </details>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>Two tokenizers give different counts</td><td>Normal. Each model family has its own tokenizer. Compare ratios, not exact numbers.</td></tr>
+      <tr><td>No difference between temperature 0 and 1</td><td>You may be using a reasoning model that ignores the setting. Try a chat model.</td></tr>
+      <tr><td>The answer is cut off mid-sentence</td><td>It hit a length limit. Tokens again.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What is a token?</p>
+      <div class="opts">
+        <button type="button" class="opt">A coin you pay with each time you log in</button>
+        <button type="button" class="opt">One full sentence of text</button>
+        <button type="button" class="opt" data-correct>A small chunk of text the AI reads and writes, often a word or part of a word</button>
+      </div>
+      <p class="why">Tokens are the units an AI counts in. Cost, speed and limits are all measured with them.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. In ordinary English, roughly how many characters make one token?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>About 4</button>
+        <button type="button" class="opt">About 1</button>
+        <button type="button" class="opt">About 40</button>
+      </div>
+      <p class="why">It is a rough rule of thumb: about four characters, or three-quarters of a word.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. Which tokens do you usually pay for?</p>
+      <div class="opts">
+        <button type="button" class="opt">Only the tokens you send</button>
+        <button type="button" class="opt" data-correct>Both the tokens you send and the tokens the AI writes</button>
+        <button type="button" class="opt">Only the tokens the AI writes</button>
+      </div>
+      <p class="why">Input and output are both billed, often at different prices. Both also count toward the context window.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. You want an AI to sort emails into categories the same way every time. Which temperature suits best?</p>
+      <div class="opts">
+        <button type="button" class="opt">High</button>
+        <button type="button" class="opt">It makes no difference</button>
+        <button type="button" class="opt" data-correct>Low</button>
+      </div>
+      <p class="why">Low temperature gives predictable, repeatable output, which is what sorting needs.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. An AI is set to temperature 0. What does that guarantee?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>More predictable answers, but not necessarily correct ones</button>
+        <button type="button" class="opt">Every answer is correct</button>
+        <button type="button" class="opt">Every answer is word-for-word identical</button>
+      </div>
+      <p class="why">Temperature changes how adventurous the pick is. It cannot check facts, so a wrong answer can be repeated consistently.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Token</dt><dd>A small chunk of text, often a word or part of a word, that an AI reads and writes. Everything is counted in tokens.</dd>
+    <dt>Tokenizer</dt><dd>The tool that splits text into tokens. Each model family has its own.</dd>
+    <dt>Input tokens</dt><dd>The tokens you send to the AI, including your instructions and earlier conversation.</dd>
+    <dt>Output tokens</dt><dd>The tokens the AI writes back.</dd>
+    <dt>Context window</dt><dd>The maximum number of tokens an AI can handle in one call, input and output together.</dd>
+    <dt>Temperature</dt><dd>A setting that controls how predictable or varied the AI's picks are. Low is predictable, high is varied.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>A token is a small chunk of text. About four English characters make one token.</li>
+    <li>Tokens decide cost (you pay per token), speed (one token at a time) and limits (the context window).</li>
+    <li>Temperature is the dial between predictable and adventurous. Low for tasks, high for creativity. Neither guarantees truth.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 3, Prompt engineering: how to write instructions that make an AI do what you actually want, and how to test them.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-1.html">&larr; Lesson 1</a>
+    <button type="button" class="secondary mid-btn" data-done="2">Mark this lesson as done</button>
+    <a class="btn" href="lesson-3.html">Lesson 3 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

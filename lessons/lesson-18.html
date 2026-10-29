@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 18: MCP: a standard plug for tools | Agentic AI Builder</title>
+  <meta name="description" content="How agents connect to outside tools through one common standard, and how to do it safely.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#why">The problem MCP solves</a></li>
+    <li><a href="#roles">Three roles</a></li>
+    <li><a href="#transport">How they connect: transports</a></li>
+    <li><a href="#n8n">MCP in n8n: three routes</a></li>
+    <li><a href="#trust">Trust and safety</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 4 · Lesson 18 · Core</p>
+  <h1>MCP: a standard plug for tools</h1>
+  <p class="lead">How agents connect to outside tools through one common standard, and how to do it safely.</p>
+  <div class="meta">
+    <span class="pill">About 50 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson18_MCP.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">MCP (Model Context Protocol) is a standard plug. Any AI app that speaks MCP can use any tool that speaks MCP, without custom wiring for each pair.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Explain MCP and the roles of host, client and server.</li>
+    <li>Choose between the ways MCP connects.</li>
+    <li>Connect an MCP server to an n8n agent, or expose your own workflows as an MCP server.</li>
+    <li>Judge whether an MCP server is safe to trust.</li>
+  </ul>
+
+  <h2 id="why">The problem MCP solves</h2>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: the phone charger</span>
+    Before USB-C, every phone had its own charger. You needed a drawer full of them. With one standard plug, any charger fits any phone. MCP is that standard plug for AI tools: write a tool once, and any compatible agent can use it.
+  </div>
+
+  <h2 id="roles">Three roles</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 190" role="img" aria-label="The host contains a client. The client connects to MCP servers over a transport. Each server offers tools, such as search or files.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <rect x="6" y="20" width="270" height="130" rx="12" class="dg-soft"/><text x="20" y="42" class="dg-h">HOST</text><text x="20" y="58" class="dg-s">the AI app (n8n agent, Claude)</text>
+      <rect x="34" y="72" width="214" height="56" rx="10" class="dg-hot"/><text x="141" y="97" text-anchor="middle" class="dg-t">Client</text><text x="141" y="115" text-anchor="middle" class="dg-s">the plug inside the host</text>
+      <rect x="400" y="20" width="244" height="56" rx="10" class="dg-box"/><text x="522" y="45" text-anchor="middle" class="dg-t">Server A</text><text x="522" y="63" text-anchor="middle" class="dg-s">offers tools: search web</text>
+      <rect x="400" y="94" width="244" height="56" rx="10" class="dg-box"/><text x="522" y="119" text-anchor="middle" class="dg-t">Server B</text><text x="522" y="137" text-anchor="middle" class="dg-s">offers tools: find emails</text>
+      <path d="M248 100H300V48H397" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M300 100V122H397" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="324" y="172" text-anchor="middle" class="dg-s">The line between client and server is called the transport.</text>
+    </svg>
+    <figcaption>Host, client and server.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Host:</strong> the AI application the person uses, such as an n8n agent or a chat app.</li>
+    <li><strong>Client:</strong> the part inside the host that speaks MCP and keeps one connection to each server.</li>
+    <li><strong>Server:</strong> a program that offers tools (and sometimes data) in the standard format. &ldquo;Server&rdquo; just means &ldquo;the side that offers things&rdquo;. It may run on your own computer.</li>
+  </ul>
+
+  <h2 id="transport">How they connect: transports</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Transport</th><th>What it is</th><th>Use it for</th></tr></thead>
+    <tbody>
+      <tr><td><strong>stdio</strong></td><td>The host starts the server as a program on the same computer and they talk through it directly</td><td>Local tools on your own machine. Not available to cloud-only apps</td></tr>
+      <tr><td><strong>Streamable HTTP</strong></td><td>The server lives at a web address and talks over normal web requests</td><td>Remote servers. The current recommended way over the web</td></tr>
+      <tr><td><strong>SSE</strong></td><td>An older web method</td><td>Still seen in the wild, but deprecated. Prefer Streamable HTTP when you have the choice</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="n8n">MCP in n8n: three routes</h2>
+  <div class="cards">
+    <div class="card"><h3>1. Use an MCP server as a tool</h3><p>Add the <strong>MCP Client Tool</strong> node to your AI Agent. Give it the server's address and credentials. The agent can now use every tool that server offers.</p></div>
+    <div class="card"><h3>2. Offer your workflows as tools</h3><p>Start a workflow with the <strong>MCP Server Trigger</strong> node and attach tools to it. n8n gives you an address that other MCP clients, like a chat app, can connect to.</p></div>
+    <div class="card"><h3>3. Control n8n itself</h3><p>n8n can also expose your instance to MCP clients so they can find and run chosen workflows. This is a switch in the instance settings, and you choose which workflows are available.</p></div>
+  </div>
+  <div class="callout">
+    <span class="label">Names and menus move</span>
+    MCP support in n8n is relatively new, and node names, settings and options are still changing. Check the current n8n documentation if a name does not match what you see.
+  </div>
+  <h3>Connect a server to your agent</h3>
+  <ol class="steps">
+    <li>Open an AI Agent workflow from earlier.</li>
+    <li>Under <strong>Tool</strong>, add the <strong>MCP Client Tool</strong> node.</li>
+    <li>Set the <strong>endpoint</strong> (the server's web address) and the transport the server supports.</li>
+    <li>Choose authentication if the server needs it. Use a credential, not text typed into the node.</li>
+    <li>Choose which of the server's tools the agent may use. Start with only what you need.</li>
+    <li>Ask the agent a question that needs the tool and open the execution to confirm it called it.</li>
+  </ol>
+
+  <h2 id="trust">Trust and safety</h2>
+  <div class="callout warn">
+    <span class="label">An MCP server is code you are inviting in</span>
+    A server can read what you send it, and what it sends back goes straight into your agent's thinking. A careless or malicious server can leak data or slip hidden instructions into its replies.
+  </div>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="source"> I know who made the server and can see its source or reputation</label>
+    <label class="check"><input type="checkbox" data-check="minimum"> The agent can use only the tools it needs</label>
+    <label class="check"><input type="checkbox" data-check="readonly"> Tools that change things (send, delete, pay) need a person to approve</label>
+    <label class="check"><input type="checkbox" data-check="keys"> Keys have the least permission that works and are stored in credentials</label>
+    <label class="check"><input type="checkbox" data-check="test"> I tried it with fake data before real data</label>
+  </div>
+  <p>Lesson 19 explains the worst combination of risks, called the lethal trifecta.</p>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>Connect an MCP server to an n8n agent and ask it a question that needs the tool. Then, if time allows, expose one workflow of your own as an MCP server.</p>
+  <ol class="steps">
+    <li>Pick a safe, well-known server your teacher suggests. A read-only one is best.</li>
+    <li>Add it to the agent with the MCP Client Tool node and allow one or two tools.</li>
+    <li>Ask a question that needs it. Open the execution and write down which tool the agent called and what it sent.</li>
+    <li>Ask a question that does <em>not</em> need it. Did the agent correctly leave it alone?</li>
+  </ol>
+  <table class="fill-table">
+    <thead><tr><th>Check</th><th>Your notes</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Server and tools I allowed</th><td><input name="server" aria-label="Server and tools"></td></tr>
+      <tr><th scope="row">Question that used the tool, and what was sent</th><td><input name="used" aria-label="Question using the tool"></td></tr>
+      <tr><th scope="row">Question that did not need it</th><td><input name="unused" aria-label="Question not using the tool"></td></tr>
+      <tr><th scope="row">One risk I noticed</th><td><input name="risk" aria-label="A risk"></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>Cannot connect to the server</td><td>Wrong address or wrong transport. Check what the server supports.</td></tr>
+      <tr><td>A local (stdio) server will not work in n8n cloud</td><td>Cloud n8n cannot start programs on your computer. Use a remote server or self-hosted n8n.</td></tr>
+      <tr><td>401 or 403</td><td>Credentials missing or without permission.</td></tr>
+      <tr><td>The agent never uses the tool</td><td>The tool is not allowed in the node, or the prompt does not say when to use it.</td></tr>
+      <tr><td>The agent uses it too much</td><td>Limit the tools, and say in the prompt when not to use them.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What does MCP stand for?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Model Context Protocol</button>
+        <button type="button" class="opt">Machine Code Printer</button>
+        <button type="button" class="opt">Multi Channel Phone</button>
+      </div>
+      <p class="why">It is a standard way for AI apps to talk to tools.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. Which comparison fits MCP best?</p>
+      <div class="opts">
+        <button type="button" class="opt">A faster internet cable</button>
+        <button type="button" class="opt" data-correct>A standard plug that lets any charger fit any phone</button>
+        <button type="button" class="opt">A password manager</button>
+      </div>
+      <p class="why">Write a tool once, and any compatible agent can use it.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. In MCP, what is the host?</p>
+      <div class="opts">
+        <button type="button" class="opt">The tool that offers capabilities</button>
+        <button type="button" class="opt">The internet cable</button>
+        <button type="button" class="opt" data-correct>The AI application the person uses, such as an n8n agent</button>
+      </div>
+      <p class="why">The host contains a client. The server offers the tools.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. Which transport is the current recommended way over the web?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Streamable HTTP</button>
+        <button type="button" class="opt">SSE</button>
+        <button type="button" class="opt">Email</button>
+      </div>
+      <p class="why">SSE is deprecated. stdio is for local programs.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Why should you limit which tools an agent can use?</p>
+      <div class="opts">
+        <button type="button" class="opt">Tools cost money for every unused option</button>
+        <button type="button" class="opt" data-correct>A server's tools can read or change things, so give only what is needed</button>
+        <button type="button" class="opt">n8n only allows one tool</button>
+      </div>
+      <p class="why">Least privilege reduces what can go wrong.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>MCP</dt><dd>Model Context Protocol. A standard way for AI apps to use outside tools.</dd>
+    <dt>Host</dt><dd>The AI application that wants to use tools.</dd>
+    <dt>MCP client</dt><dd>The part inside the host that speaks MCP and connects to servers.</dd>
+    <dt>MCP server</dt><dd>A program that offers tools in the MCP standard.</dd>
+    <dt>Transport</dt><dd>The way client and server talk: stdio, Streamable HTTP or SSE.</dd>
+    <dt>stdio</dt><dd>Local transport: the host starts the server on the same computer.</dd>
+    <dt>Streamable HTTP</dt><dd>The current recommended transport for remote servers.</dd>
+    <dt>SSE</dt><dd>An older web transport, now deprecated.</dd>
+    <dt>MCP Client Tool</dt><dd>The n8n node that lets an agent use a server's tools.</dd>
+    <dt>MCP Server Trigger</dt><dd>The n8n node that offers your workflows as tools to other MCP clients.</dd>
+    <dt>Least privilege</dt><dd>Giving only the permissions that the job needs.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>MCP is the standard plug: hosts contain clients, clients connect to servers, and servers offer tools.</li>
+    <li>Transports: stdio for local programs, Streamable HTTP for remote servers, SSE is older and deprecated.</li>
+    <li>In n8n you can use servers (MCP Client Tool), offer workflows as a server (MCP Server Trigger), or expose your instance. Trust only servers you can vouch for, and allow the fewest tools.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 19, context engineering and sub-agents: how to give an agent exactly what it needs, split big jobs between agents, and avoid the lethal trifecta.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-17.html">&larr; Lesson 17</a>
+    <button type="button" class="secondary mid-btn" data-done="18">Mark this lesson as done</button>
+    <a class="btn" href="lesson-19.html">Lesson 19 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

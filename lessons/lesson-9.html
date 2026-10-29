@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 9: Data, expressions and webhooks | Agentic AI Builder</title>
+  <meta name="description" content="How data moves between boxes in n8n, and how other systems can start your workflow.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#json">JSON in four steps</a></li>
+    <li><a href="#expressions">Expressions: picking values out of data</a></li>
+    <li><a href="#items">Reshaping data with Edit Fields</a></li>
+    <li><a href="#webhooks">APIs and webhooks</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 2 · Lesson 9 · Integration</p>
+  <h1>Data, expressions and webhooks</h1>
+  <p class="lead">How data moves between boxes in n8n, and how other systems can start your workflow.</p>
+  <div class="meta">
+    <span class="pill">About 50 minutes to read</span>
+    <span class="pill integration">Integration</span>
+    <a class="pill" href="../downloads/Lesson9_Data_Expressions_Webhooks.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">Data in n8n is a list of items, each written as JSON. Expressions are how one box picks values out of data that came before. A webhook is a doorbell that lets other systems start your workflow.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Read and write JSON data inside a workflow.</li>
+    <li>Use n8n expressions to pull values from earlier nodes.</li>
+    <li>Receive data through a webhook.</li>
+  </ul>
+
+  <h2 id="json">JSON in four steps</h2>
+  <p>You met JSON in Lesson 1. Here it is again, built up one step at a time, using a spreadsheet as the comparison.</p>
+  <div class="cards">
+    <div class="card"><h3>1. Key and value</h3><p>One cell with its heading.</p><div class="codebox"><pre><code>"name": "Wanjiru"</code></pre></div></div>
+    <div class="card"><h3>2. Object</h3><p>One whole row, wrapped in curly braces.</p><div class="codebox"><pre><code>{ "name": "Wanjiru", "city": "Nyeri" }</code></pre></div></div>
+    <div class="card"><h3>3. Array</h3><p>A list of rows, in square brackets.</p><div class="codebox"><pre><code>[ {"name": "Wanjiru"}, {"name": "Amina"} ]</code></pre></div></div>
+    <div class="card"><h3>4. Nesting</h3><p>A value that is itself an object or list.</p><div class="codebox"><pre><code>{ "name": "Wanjiru", "orders": [ {"item": "tea"} ] }</code></pre></div></div>
+  </div>
+  <p>Reminder of the rules: keys need <strong>double quotes</strong>, and <code>true</code> and <code>false</code> are lowercase with no quotes.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a spreadsheet</span>
+    A spreadsheet of five customers is a list of five rows. n8n treats it the same way: <strong>five items</strong>. A node that processes items runs once for each one.
+  </div>
+
+  <h2 id="expressions">Expressions: picking values out of data</h2>
+  <p>An <strong>expression</strong> goes inside double curly braces. It tells n8n: &ldquo;put the value from over there into this field.&rdquo;</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>You type</th><th>It means</th></tr></thead>
+    <tbody>
+      <tr><td><code>{{ $json.name }}</code></td><td>The <code>name</code> field of the item that just arrived</td></tr>
+      <tr><td><code>{{ $json.orders[0].item }}</code></td><td>The <code>item</code> inside the first order in the <code>orders</code> list. Counting starts at 0</td></tr>
+      <tr><td><code>{{ $('Google Sheets').item.json.email }}</code></td><td>The <code>email</code> field from an <em>earlier</em> node, referred to by its name on the canvas</td></tr>
+      <tr><td><code>{{ JSON.stringify($json) }}</code></td><td>Turn all the data into plain text</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>Why turn data into text?</strong> A language model reads text. If you want it to read a row of data, convert the data into text first with <code>JSON.stringify</code>.</p>
+  <p>In an n8n field you may need to switch the field to <strong>Expression</strong> mode (or just type two curly braces) before it understands the braces.</p>
+  <div class="demo" data-widget="jsonpath"></div>
+
+  <h2 id="items">Reshaping data with Edit Fields</h2>
+  <p>Data rarely arrives in the shape you need. The <strong>Edit Fields</strong> node lets you rename fields, add new ones and keep only what you want.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a form converter</span>
+    One office uses a form with &ldquo;Full Name&rdquo; and another uses &ldquo;name&rdquo;. Edit Fields is the clerk who copies the information from one form to the other.
+  </div>
+  <p>For example, to build a single sentence for the AI from a row of a sheet, add a field called <code>text</code> and set it to:</p>
+  <div class="codebox"><pre><code>Customer {{ $json.name }} from {{ $json.city }} ordered {{ $json.item }}.</code></pre></div>
+
+  <h2 id="webhooks">APIs and webhooks</h2>
+  <p>An <strong>API endpoint</strong> is an address that accepts requests. You used one in Lesson 1 when you sent a question to an AI. A <strong>webhook</strong> is the other way around: it is an address that <em>your</em> workflow gives out, so that other systems can call it when something happens.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: the doorbell</span>
+    Your workflow is a house. A webhook is the doorbell. Anyone with the address can ring it, and when they do, the workflow wakes up and handles the visit.
+  </div>
+  <div class="cards">
+    <div class="card"><h3>GET</h3><p>&ldquo;Please give me some data.&rdquo; No order slip needed.</p></div>
+    <div class="card"><h3>POST</h3><p>&ldquo;Here is some data for you.&rdquo; It carries a JSON body, like the order form in Lesson 1.</p></div>
+  </div>
+  <h3>Set up a webhook</h3>
+  <ol class="steps">
+    <li>Add a <strong>Webhook</strong> node and set the method to POST. Give it a path.</li>
+    <li>The node shows two addresses. The <strong>test URL</strong> only works while you press &ldquo;Listen for test event&rdquo;. The <strong>production URL</strong> works when the workflow is active.</li>
+    <li>Send a test request from a terminal, or a tool like Postman:</li>
+  </ol>
+  <div class="codebox"><pre><code>curl -X POST "YOUR_TEST_URL_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Wanjiru", "message": "Hello"}'</code></pre></div>
+  <p>The data you sent appears under <code>body</code>, so the name is read with <code>{{ $json.body.name }}</code>.</p>
+  <div class="callout warn">
+    <span class="label">A webhook is an open door</span>
+    Anyone who finds the address can call it. For real use, add a secret check, for example a required header, so only trusted senders get in.
+  </div>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>Pull rows from a Google Sheet, reshape the fields with Edit Fields, and send each row to an agent that writes a one-line summary.</p>
+  <ol class="steps">
+    <li>Make a Google Sheet with a header row and five rows, for example name, city, item and quantity.</li>
+    <li>Add a <strong>Google Sheets</strong> node to get the rows. Check that you see five items in the output.</li>
+    <li>Add an <strong>Edit Fields</strong> node that creates one field called <code>text</code>, a sentence built from the columns.</li>
+    <li>Add an <strong>AI Agent</strong> whose prompt is the <code>text</code> field and whose instruction is &ldquo;Write a one-line summary.&rdquo;</li>
+    <li>Run it. Open the agent's execution and confirm it ran five times, once per row.</li>
+  </ol>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="rows"> The Sheets node shows five items</label>
+    <label class="check"><input type="checkbox" data-check="fields"> Edit Fields produces the <code>text</code> sentence for every row</label>
+    <label class="check"><input type="checkbox" data-check="agent"> The agent returns five one-line summaries</label>
+    <label class="check"><input type="checkbox" data-check="webhook"> Bonus: I called a webhook with curl or Postman and read <code>body</code></label>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td><code>undefined</code> in a field</td><td>Spelling or capital letters differ from the real field name. Look at the previous node's output and copy the name.</td></tr>
+      <tr><td>The expression text shows as plain words</td><td>The field is not in Expression mode.</td></tr>
+      <tr><td>Only one row was processed</td><td>An earlier node returned one item, or you used the first item only. Check the item count after each node.</td></tr>
+      <tr><td>The webhook does nothing</td><td>You used the test URL without listening, or the production URL on an inactive workflow.</td></tr>
+      <tr><td><code>{{ $json.name }}</code> is empty for a webhook</td><td>Webhook data sits under <code>body</code>: use <code>$json.body.name</code>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What does {{ $json.name }} do?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Reads the name field from the item that just arrived</button>
+        <button type="button" class="opt">Creates a new node called name</button>
+        <button type="button" class="opt">Saves the name to a file</button>
+      </div>
+      <p class="why">$json is the current item's data, and .name picks one field.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. How can you read a value from an earlier node?</p>
+      <div class="opts">
+        <button type="button" class="opt">You cannot. Each node only sees its own data</button>
+        <button type="button" class="opt" data-correct>Refer to the node by its name, for example $('Google Sheets').item.json.email</button>
+        <button type="button" class="opt">Copy and paste the value by hand</button>
+      </div>
+      <p class="why">Expressions can reach back to earlier nodes by name.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. What is a webhook?</p>
+      <div class="opts">
+        <button type="button" class="opt">A fishing tool for finding data on the web</button>
+        <button type="button" class="opt">A kind of spreadsheet</button>
+        <button type="button" class="opt" data-correct>An address that other systems call when something happens, so your workflow starts</button>
+      </div>
+      <p class="why">It is the doorbell of your workflow.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. Which method sends data with a JSON body?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>POST</button>
+        <button type="button" class="opt">GET</button>
+        <button type="button" class="opt">READ</button>
+      </div>
+      <p class="why">GET fetches. POST sends.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Why use JSON.stringify before giving data to a model?</p>
+      <div class="opts">
+        <button type="button" class="opt">It makes the data shorter</button>
+        <button type="button" class="opt" data-correct>A model reads text, so the data must be turned into text</button>
+        <button type="button" class="opt">It encrypts the data</button>
+      </div>
+      <p class="why">Stringify converts structured data into a piece of text.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Item</dt><dd>One piece of data passing through n8n, usually one row of a sheet.</dd>
+    <dt>Key and value</dt><dd>A label with its data, like a spreadsheet heading and a cell.</dd>
+    <dt>Object</dt><dd>A group of key-value pairs wrapped in curly braces. One row.</dd>
+    <dt>Array</dt><dd>A list written in square brackets. Counting starts at 0.</dd>
+    <dt>Nesting</dt><dd>Putting objects or lists inside other objects.</dd>
+    <dt>$json</dt><dd>In an n8n expression, the data of the current item.</dd>
+    <dt>JSON.stringify</dt><dd>Turns structured data into plain text that a model can read.</dd>
+    <dt>Edit Fields</dt><dd>An n8n node that renames, adds or removes fields so data fits the next step.</dd>
+    <dt>Webhook</dt><dd>An address your workflow gives out. When another system calls it, the workflow starts.</dd>
+    <dt>Endpoint</dt><dd>An address that accepts requests.</dd>
+    <dt>GET</dt><dd>A request that asks for data.</dd>
+    <dt>POST</dt><dd>A request that sends data, usually with a JSON body.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>n8n data is a list of items. Each item is JSON: keys and values, objects, arrays and nesting.</li>
+    <li>Expressions in double curly braces pull values from the current item or from earlier nodes.</li>
+    <li>Edit Fields reshapes data. JSON.stringify turns data into text a model can read.</li>
+    <li>A webhook is a doorbell that starts a workflow. Use GET to fetch and POST to send.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 10, the Week 2 project: a Daily Portfolio Rebalancer that runs on a schedule, measures drift from target weights and emails a summary.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-8.html">&larr; Lesson 8</a>
+    <button type="button" class="secondary mid-btn" data-done="9">Mark this lesson as done</button>
+    <a class="btn" href="lesson-10.html">Lesson 10 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

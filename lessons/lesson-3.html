@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 3: Prompt engineering: giving clear instructions | Agentic AI Builder</title>
+  <meta name="description" content="How to write a prompt that works, and how to prove it works.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#stateless">The AI starts fresh every time</a></li>
+    <li><a href="#system-user">Two parts: system and user</a></li>
+    <li><a href="#recipe">The five-part recipe</a></li>
+    <li><a href="#techniques">Techniques that help</a></li>
+    <li><a href="#structured">Asking for structured output</a></li>
+    <li><a href="#testing">Test, do not guess</a></li>
+    <li><a href="#exercise">Your exercise: classify 20 customer messages</a></li>
+    <li><a href="#mistakes">Common mistakes</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 1 · Lesson 3 · Core</p>
+  <h1>Prompt engineering: giving clear instructions</h1>
+  <p class="lead">How to write a prompt that works, and how to prove it works.</p>
+  <div class="meta">
+    <span class="pill">About 45 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson3_Prompt_Engineering.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">An AI only knows what you put in front of it. A good prompt is a clear set of instructions, and a good builder tests the prompt instead of guessing.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Write a prompt with a system part, a user part and a stated output format.</li>
+    <li>Add examples and step-by-step reasoning when they help.</li>
+    <li>Test several versions of a prompt against the same set of cases and keep the best.</li>
+  </ul>
+
+  <h2 id="stateless">The AI starts fresh every time</h2>
+  <p>Each time you call an AI, it sees <strong>only what you send in that call</strong>. It does not remember the last call.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: the helper with no memory</span>
+    Imagine a very fast helper who forgets everything after each task. Every note you give them must be complete. If you say &ldquo;do the same as yesterday&rdquo;, they have no idea what that means. Writing a prompt is writing that complete note.
+  </div>
+
+  <h2 id="system-user">Two parts: system and user</h2>
+  <div class="cards">
+    <div class="card"><h3>System prompt</h3><p>The standing instructions: who the AI is and what rules it follows. <strong>Like a job description.</strong></p></div>
+    <div class="card"><h3>User prompt</h3><p>The specific request or data for this call. <strong>Like today's task.</strong></p></div>
+  </div>
+  <p>The same system prompt can be reused for thousands of different user prompts. That is why we write it carefully, once.</p>
+
+  <h2 id="recipe">The five-part recipe</h2>
+  <ol class="steps">
+    <li><strong>Role.</strong> Who is the AI acting as? &ldquo;You are a customer-support triage assistant.&rdquo;</li>
+    <li><strong>Task.</strong> What should it do, in one clear sentence? &ldquo;Classify each message into one category.&rdquo;</li>
+    <li><strong>Data.</strong> The material to work on, clearly separated from the instructions, for example after the words &ldquo;Message:&rdquo;.</li>
+    <li><strong>Rules.</strong> The limits. Say what to do, not only what to avoid. &ldquo;The category must be billing, technical or general.&rdquo;</li>
+    <li><strong>Format.</strong> Exactly what the reply must look like. &ldquo;Reply with the category word only, in lowercase.&rdquo;</li>
+  </ol>
+  <h3>Before and after</h3>
+  <div class="prompt"><span class="label">Weak prompt</span>What is this message about? Error 500 when I press Pay.</div>
+  <p>You will get a paragraph, different each time, that is hard for a program to use. Now compare:</p>
+  <div class="prompt"><span class="label">Strong prompt: system part</span>You are a customer-support triage assistant. Classify each message into exactly one category: billing, technical or general.
+Reply with the category word only, in lowercase, with no punctuation.</div>
+  <div class="prompt"><span class="label">Strong prompt: user part</span>Message: Error 500 when I press Pay.
+Category:</div>
+  <p>Now the answer is one word, in a predictable format, ready for a program to use.</p>
+
+  <h2 id="techniques">Techniques that help</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Technique</th><th>What it means</th><th>Use it when</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Clear role</strong></td><td>Tell the AI who it is</td><td>Always. It sets tone and scope.</td></tr>
+      <tr><td><strong>Explicit rules</strong></td><td>Allowed answers, length, language</td><td>A program will use the output</td></tr>
+      <tr><td><strong>Few-shot examples</strong></td><td>Show 2 to 5 worked examples inside the prompt</td><td>The format or tricky cases are hard to describe in words</td></tr>
+      <tr><td><strong>Step by step</strong></td><td>Ask it to work through the steps before answering</td><td>Multi-step problems on chat models. Reasoning models already do this.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: few-shot is training by example</span>
+    If you show a new employee three finished reports, they understand what you want faster than from a long explanation. Few-shot examples do the same for an AI.
+  </div>
+  <div class="prompt"><span class="label">A few-shot example block</span>Examples:
+Message: My bill is higher than usual this month.
+Category: billing
+Message: The page shows a blank screen after I log in.
+Category: technical
+Message: Where is your head office located?
+Category: general</div>
+
+  <h2 id="structured">Asking for structured output</h2>
+  <p>When a program will read the answer, ask for JSON with exact key names, such as <code>{"category": "billing", "confidence": "high"}</code>. Keep the temperature low. Then <strong>check it is valid JSON before using it</strong>. Sometimes the AI adds a friendly sentence in front or wraps the answer in extra symbols, and a program trying to read that will break. If the check fails, try once more or flag it for a person. You practised the JSON rules in Lesson 1.</p>
+
+  <h2 id="testing">Test, do not guess</h2>
+  <p>A prompt that worked on three examples tells you very little. The professional habit has four steps:</p>
+  <ol class="steps">
+    <li><strong>Build a test set:</strong> a fixed list of example inputs with the correct answers (the &ldquo;labels&rdquo;).</li>
+    <li><strong>Run every prompt version</strong> on the same list.</li>
+    <li><strong>Score each version</strong>, for example 14 correct out of 20.</li>
+    <li><strong>Change one thing at a time</strong>, so you know what helped. Keep the best.</li>
+  </ol>
+  <div class="callout warn">
+    <span class="label">The cheating trap</span>
+    Never copy test messages into your few-shot examples. If the AI has seen the answers, your score is meaningless. Keep examples and test cases separate.
+  </div>
+  <div class="callout">
+    <span class="label">Where this is heading</span>
+    Prompt engineering is growing into <strong>context engineering</strong>: choosing everything the AI sees, including the conversation history and tool results. You meet that in Lesson 4 and again in Lesson 19.
+  </div>
+
+  <h2 id="exercise">Your exercise: classify 20 customer messages</h2>
+  <p>Sort these messages into <strong>billing</strong>, <strong>technical</strong> or <strong>general</strong>. The &ldquo;correct label&rdquo; column is your answer key. A few are tricky on purpose, and they are marked.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>#</th><th>Message</th><th>Correct label</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>I was charged twice for my subscription this month.</td><td>billing</td></tr>
+      <tr><td>2</td><td>The app crashes every time I open the settings page.</td><td>technical</td></tr>
+      <tr><td>3</td><td>What are your opening hours on Saturdays?</td><td>general</td></tr>
+      <tr><td>4</td><td>Can I get a refund for last week's order?</td><td>billing</td></tr>
+      <tr><td>5</td><td>I can't log in even after resetting my password.</td><td>technical</td></tr>
+      <tr><td>6</td><td>Do you ship to Uganda?</td><td>general</td></tr>
+      <tr><td>7</td><td>My invoice shows the wrong company name.</td><td>billing</td></tr>
+      <tr><td>8</td><td>The website is very slow when I upload photos.</td><td>technical</td></tr>
+      <tr><td>9</td><td>Is there a student discount? <em>(tricky: about price, not a billing problem)</em></td><td>general</td></tr>
+      <tr><td>10</td><td>Why was I charged a late fee?</td><td>billing</td></tr>
+      <tr><td>11</td><td>The confirmation email never arrived.</td><td>technical</td></tr>
+      <tr><td>12</td><td>How do I contact the manager?</td><td>general</td></tr>
+      <tr><td>13</td><td>My card was declined but the money left my account.</td><td>billing</td></tr>
+      <tr><td>14</td><td>Error 500 when I press Pay. <em>(tricky: mentions paying but is a fault)</em></td><td>technical</td></tr>
+      <tr><td>15</td><td>Do you have a physical store in Nyeri?</td><td>general</td></tr>
+      <tr><td>16</td><td>Please send me a receipt for my last payment.</td><td>billing</td></tr>
+      <tr><td>17</td><td>The mobile app won't update on my phone.</td><td>technical</td></tr>
+      <tr><td>18</td><td>Can I change the delivery address for next month? <em>(tricky)</em></td><td>general</td></tr>
+      <tr><td>19</td><td>I want to cancel my plan and stop being billed.</td><td>billing</td></tr>
+      <tr><td>20</td><td>Thanks, the issue was fixed quickly! <em>(tricky: no request at all)</em></td><td>general</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ol class="steps">
+    <li><strong>Version 1, vague.</strong> Write a loose prompt such as &ldquo;What is this message about?&rdquo; Try it on all 20.</li>
+    <li><strong>Version 2, role and rules.</strong> Use the five-part recipe with the format &ldquo;category word only&rdquo;.</li>
+    <li><strong>Version 3, add examples.</strong> Add three few-shot examples that are <strong>not</strong> from the 20 above.</li>
+    <li><strong>Score each version.</strong> Count how many of the 20 matched the label exactly.</li>
+    <li><strong>Keep the best</strong> and note why it still misses some.</li>
+  </ol>
+  <p>Use any chat tool that lets you set a system prompt. Paste each message after &ldquo;Message:&rdquo; and note the reply. Setting temperature low (0 to 0.3) will give steadier results.</p>
+  <div class="table-scroll">
+  <table class="fill-table">
+    <thead><tr><th>Version</th><th>Correct out of 20</th><th>Messages it missed</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">1: vague</th><td><input name="v1-score" aria-label="Version 1 score"></td><td><input name="v1-miss" aria-label="Version 1 misses"></td></tr>
+      <tr><th scope="row">2: role and rules</th><td><input name="v2-score" aria-label="Version 2 score"></td><td><input name="v2-miss" aria-label="Version 2 misses"></td></tr>
+      <tr><th scope="row">3: with examples</th><td><input name="v3-score" aria-label="Version 3 score"></td><td><input name="v3-miss" aria-label="Version 3 misses"></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>Hand in:</strong> your three prompts, the three scores, and one sentence on why your best version still misses some messages.</p>
+  <details>
+    <summary>For the curious: score a prompt automatically with Python</summary>
+    <p>If you are comfortable running a script, this checks one prompt against all 20 messages and prints the score. Edit <code>MODEL</code>, <code>RULES</code> and <code>EXAMPLES</code> to try each version. A reply counts as correct only if it is exactly the category word.</p>
+    <div class="codebox"><pre><code>import os, time, requests
+
+API_KEY = os.environ["OPENROUTER_API_KEY"]
+URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL = "MODEL_ID"
+
+TESTS = [
+    ("I was charged twice for my subscription this month.", "billing"),
+    ("The app crashes every time I open the settings page.", "technical"),
+    ("What are your opening hours on Saturdays?", "general"),
+    # ... add the other 17 messages and labels from the table above ...
+]
+
+RULES = ("You are a customer-support triage assistant. Classify each message into "
+         "exactly one category: billing, technical or general. "
+         "Reply with the category word only, in lowercase, with no punctuation.")
+EXAMPLES = ""   # paste your few-shot examples here for version 3
+
+def classify(message):
+    resp = requests.post(
+        URL,
+        headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
+        json={"model": MODEL, "temperature": 0,
+              "messages": [{"role": "system", "content": RULES + EXAMPLES},
+                           {"role": "user", "content": f"Message: {message}\nCategory:"}]},
+        timeout=60,
+    )
+    return resp.json()["choices"][0]["message"]["content"].strip().lower()
+
+correct = 0
+for message, label in TESTS:
+    answer = classify(message)
+    if answer == label:
+        correct += 1
+    else:
+        print("MISS:", message, "| expected", label, "| got", answer[:40])
+    time.sleep(0.5)
+print(f"Score: {correct}/{len(TESTS)}")</code></pre></div>
+  </details>
+
+  <h2 id="mistakes">Common mistakes</h2>
+  <ul>
+    <li><strong>Tuning on the test set.</strong> Copying test messages into your examples inflates the score.</li>
+    <li><strong>Changing many things at once.</strong> You cannot tell which change helped.</li>
+    <li><strong>Vague goals</strong> such as &ldquo;be helpful&rdquo;. Say exactly what good looks like.</li>
+    <li><strong>Trusting one run.</strong> If a score surprises you, run the set again.</li>
+    <li><strong>Asking for JSON without checking it.</strong></li>
+  </ul>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What does the AI remember from your previous call?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Nothing. Everything it needs must be in the current call</button>
+        <button type="button" class="opt">Everything you ever said</button>
+        <button type="button" class="opt">Only your last question</button>
+      </div>
+      <p class="why">Each call starts fresh. That is why a prompt must be a complete note.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. What is the difference between a system prompt and a user prompt?</p>
+      <div class="opts">
+        <button type="button" class="opt">The system prompt is written by the AI company and cannot be changed</button>
+        <button type="button" class="opt" data-correct>The system prompt sets the role and rules. The user prompt carries today's request</button>
+        <button type="button" class="opt">There is no difference</button>
+      </div>
+      <p class="why">Think job description (system) and today's task (user).</p>
+    </div>
+    <div class="q">
+      <p class="question">3. What are few-shot examples?</p>
+      <div class="opts">
+        <button type="button" class="opt">Asking the AI to answer in only a few words</button>
+        <button type="button" class="opt">Trying a prompt a few times</button>
+        <button type="button" class="opt" data-correct>A few worked examples placed inside the prompt to show what you want</button>
+      </div>
+      <p class="why">Showing a few finished examples is often faster than explaining in words.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. Why must few-shot examples be kept out of your test set?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>If the AI has seen the answers, the score no longer measures anything real</button>
+        <button type="button" class="opt">The prompt would become too long</button>
+        <button type="button" class="opt">The AI refuses to repeat examples</button>
+      </div>
+      <p class="why">A fair test uses cases the AI has not been shown.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. The AI returns JSON that your program will use. What should you do first?</p>
+      <div class="opts">
+        <button type="button" class="opt">Trust it, because the AI is usually right</button>
+        <button type="button" class="opt" data-correct>Check that it is valid JSON, and handle the case where it is not</button>
+        <button type="button" class="opt">Convert it to a Word document</button>
+      </div>
+      <p class="why">Models sometimes add extra words or symbols around JSON, which makes a program fail.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Prompt</dt><dd>The instructions and data you send to an AI.</dd>
+    <dt>System prompt</dt><dd>The standing role and rules for the AI, set once. Like a job description.</dd>
+    <dt>User prompt</dt><dd>The specific request or data for this call. Like today's task.</dd>
+    <dt>Few-shot examples</dt><dd>A few worked input-and-answer pairs placed in the prompt to show the AI what you want.</dd>
+    <dt>Structured output</dt><dd>A reply in a fixed format, such as JSON, that a program can read.</dd>
+    <dt>Test set</dt><dd>A fixed list of example inputs with the correct answers, used to score prompts fairly.</dd>
+    <dt>Label</dt><dd>The correct answer for an item in a test set.</dd>
+    <dt>Context engineering</dt><dd>Choosing everything the AI sees in a call, not only the wording of the instructions.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>The AI starts fresh every call, so a prompt must be a complete note.</li>
+    <li>Use the five parts: role, task, data, rules, format. Add examples when the format is hard to describe.</li>
+    <li>Test every prompt version on the same fixed set, change one thing at a time, and never mix examples into the test set.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 4, Memory, context and tools: why a chat only seems to remember, and how an AI uses tools to act in the world.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-2.html">&larr; Lesson 2</a>
+    <button type="button" class="secondary mid-btn" data-done="3">Mark this lesson as done</button>
+    <a class="btn" href="lesson-4.html">Lesson 4 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

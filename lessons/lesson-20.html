@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 20: Capstone: a multi-agent sales system | Agentic AI Builder</title>
+  <meta name="description" content="Bring the whole course together: a business-development manager agent with specialist sub-agents.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#system">The system</a></li>
+    <li><a href="#start">Your starting files</a></li>
+    <li><a href="#plan">Step 1: plan before you build</a></li>
+    <li><a href="#build">Step 2: build in this order</a></li>
+    <li><a href="#eval">Step 3: evaluate it honestly</a></li>
+    <li><a href="#writeup">Step 4: the one-page write-up</a></li>
+    <li><a href="#demo">Step 5: the demo</a></li>
+    <li><a href="#deliver">What to hand in</a></li>
+    <li><a href="#rubric">How it will be judged</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 4 · Lesson 20 · Project</p>
+  <h1>Capstone: a multi-agent sales system</h1>
+  <p class="lead">Bring the whole course together: a business-development manager agent with specialist sub-agents.</p>
+  <div class="meta">
+    <span class="pill">About 120 minutes to read</span>
+    <span class="pill project">Project</span>
+    <a class="pill" href="../downloads/Lesson20_Capstone_Multi_Agent_Sales_System.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">You will plan, build, test and present a system where a manager agent coordinates four specialists to help a sales team. This is the course in one project: prompts, tools, data, workflows, MCP, sub-agents and safety.</div>
+
+  <h2 id="system">The system</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 270" role="img" aria-label="A BDM agent receives a request and delegates to four specialist agents: SDR, Prospecting, RevOps and Account Executive. Prospecting uses Firecrawl and Hunter.io through MCP.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <rect x="200" y="6" width="250" height="56" rx="10" class="dg-hot"/><text x="325" y="31" text-anchor="middle" class="dg-t">BDM agent (manager)</text><text x="325" y="49" text-anchor="middle" class="dg-s">understands, delegates, combines</text>
+      <rect x="6" y="130" width="148" height="64" rx="10" class="dg-box"/><text x="80" y="156" text-anchor="middle" class="dg-t">SDR</text><text x="80" y="174" text-anchor="middle" class="dg-s">drafts outreach</text>
+      <rect x="170" y="130" width="148" height="64" rx="10" class="dg-box"/><text x="244" y="156" text-anchor="middle" class="dg-t">Prospecting</text><text x="244" y="174" text-anchor="middle" class="dg-s">finds companies, contacts</text>
+      <rect x="334" y="130" width="148" height="64" rx="10" class="dg-box"/><text x="408" y="156" text-anchor="middle" class="dg-t">RevOps</text><text x="408" y="174" text-anchor="middle" class="dg-s">records, checks, reports</text>
+      <rect x="498" y="130" width="146" height="64" rx="10" class="dg-box"/><text x="571" y="156" text-anchor="middle" class="dg-t">Account Exec</text><text x="571" y="174" text-anchor="middle" class="dg-s">prepares for meetings</text>
+      <path d="M270 62L90 126" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M300 62L244 126" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M350 62L408 126" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M380 62L560 126" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <rect x="140" y="222" width="210" height="40" rx="8" class="dg-soft"/><text x="245" y="247" text-anchor="middle" class="dg-s">Firecrawl + Hunter.io (via MCP)</text>
+      <path d="M244 198V218" class="dg-la" marker-end="url(#ah)"/>
+      <rect x="382" y="222" width="210" height="40" rx="8" class="dg-soft"/><text x="487" y="247" text-anchor="middle" class="dg-s">Sheet or CRM (records)</text>
+      <path d="M408 198L440 218" class="dg-la" marker-end="url(#ah)"/>
+    </svg>
+    <figcaption>Each specialist has a short prompt and only the tools for its job.</figcaption>
+  </figure>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Agent</th><th>Job</th><th>Tools</th></tr></thead>
+    <tbody>
+      <tr><td><strong>BDM (manager)</strong></td><td>Understands the request, decides who helps, combines results</td><td>The four specialists as tools</td></tr>
+      <tr><td><strong>Prospecting</strong></td><td>Finds companies that match the ideal customer profile and finds contacts</td><td>Firecrawl (reads web pages) and Hunter.io (finds work emails), through MCP</td></tr>
+      <tr><td><strong>SDR</strong> (sales development rep)</td><td>Drafts a short, personal first message</td><td>Drafts only. Never sends</td></tr>
+      <tr><td><strong>RevOps</strong> (revenue operations)</td><td>Records results, checks data quality, reports</td><td>Sheet or CRM</td></tr>
+      <tr><td><strong>Account Executive</strong></td><td>Prepares a briefing before a meeting</td><td>Reads records, company notes</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a small sales team</span>
+    The BDM is the team lead. Prospecting finds the leads, the SDR writes to them, RevOps keeps the books, and the Account Executive talks to the interested ones. You are building a digital version of that team.
+  </div>
+
+  <h2 id="start">Your starting files</h2>
+  <ul>
+    <li><strong>Five workflow JSON files</strong>: starting versions of the manager and the specialists, to import into n8n.</li>
+    <li><strong>ICP.pdf</strong>: the Ideal Customer Profile, a description of the kind of company we want to sell to.</li>
+  </ul>
+  <p>Use the files your teacher shares. In n8n, import a file from the workflow menu. Then replace placeholder credentials with your own.</p>
+
+  <h2 id="plan">Step 1: plan before you build</h2>
+  <p>Fill this in first. It takes thirty minutes and saves hours.</p>
+  <table class="fill-table">
+    <thead><tr><th>Planning question</th><th>My answer</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Who is the ideal customer? (from ICP.pdf, in my words)</th><td><input name="icp" aria-label="ICP"></td></tr>
+      <tr><th scope="row">What is the one request the BDM should handle best?</th><td><input name="request" aria-label="Main request"></td></tr>
+      <tr><th scope="row">Which agent does what? (one line each)</th><td><input name="roles" aria-label="Roles"></td></tr>
+      <tr><th scope="row">What can each agent <em>not</em> do?</th><td><input name="limits" aria-label="Limits"></td></tr>
+      <tr><th scope="row">Which actions need a person to approve?</th><td><input name="approve" aria-label="Approvals"></td></tr>
+      <tr><th scope="row">Which trifecta ingredient am I removing?</th><td><input name="trifecta" aria-label="Trifecta"></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="build">Step 2: build in this order</h2>
+  <ol class="steps">
+    <li><strong>Import and run each specialist alone.</strong> Make sure each one works by itself with a fixed test input.</li>
+    <li><strong>Connect Prospecting to its MCP tools</strong> (Lesson 18). Allow only the tools it needs.</li>
+    <li><strong>Make the SDR draft, not send.</strong> Its output goes to a draft or a sheet for review.</li>
+    <li><strong>Make RevOps record results</strong> with consistent fields: company, contact, status, date.</li>
+    <li><strong>Add error handling</strong> (Lesson 17): retries for lookups, an error branch, and an error workflow.</li>
+    <li><strong>Assemble the BDM.</strong> Attach the specialists as tools with clear names and descriptions (Lesson 19) and write the manager prompt.</li>
+    <li><strong>Test the whole system</strong> using the table below, then fix and test again.</li>
+  </ol>
+  <div class="callout warn">
+    <span class="label">Safety rules for this project</span>
+    Draft, never send. Use test companies and your own email address for tests. Keep keys in credentials. A web page that Prospecting reads is untrusted content, so Prospecting must not be able to send anything out or see private records. That is how you break the trifecta.
+  </div>
+  <div class="callout">
+    <span class="label">Real people's data</span>
+    Contact details are personal data. In real work, check the rules on collecting and using them (consent, opt-out, data-protection law where you live) and keep only what you need. For this course, keep to company information and your own test contacts.
+  </div>
+
+  <h2 id="eval">Step 3: evaluate it honestly</h2>
+  <p>Write <strong>10 test requests</strong> before you start fixing. Include easy ones, vague ones and ones that should be refused or questioned (for example &ldquo;Email the CEO of every company in the list now&rdquo;, which should produce drafts and ask for approval, not send).</p>
+  <div class="table-scroll">
+  <table class="fill-table">
+    <thead><tr><th>#</th><th>Request</th><th>Expected behaviour</th><th>What happened</th><th>Pass?</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><input name="e1r" aria-label="Request 1"></td><td><input name="e1x" aria-label="Expected 1"></td><td><input name="e1a" aria-label="Actual 1"></td><td><input name="e1p" aria-label="Pass 1"></td></tr>
+      <tr><td>2</td><td><input name="e2r" aria-label="Request 2"></td><td><input name="e2x" aria-label="Expected 2"></td><td><input name="e2a" aria-label="Actual 2"></td><td><input name="e2p" aria-label="Pass 2"></td></tr>
+      <tr><td>3</td><td><input name="e3r" aria-label="Request 3"></td><td><input name="e3x" aria-label="Expected 3"></td><td><input name="e3a" aria-label="Actual 3"></td><td><input name="e3p" aria-label="Pass 3"></td></tr>
+      <tr><td>4</td><td><input name="e4r" aria-label="Request 4"></td><td><input name="e4x" aria-label="Expected 4"></td><td><input name="e4a" aria-label="Actual 4"></td><td><input name="e4p" aria-label="Pass 4"></td></tr>
+      <tr><td>5</td><td><input name="e5r" aria-label="Request 5"></td><td><input name="e5x" aria-label="Expected 5"></td><td><input name="e5a" aria-label="Actual 5"></td><td><input name="e5p" aria-label="Pass 5"></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The table shows five rows. Continue the pattern for all ten in your notes.</p>
+  <p>Also track: how long each run takes, roughly what each run costs, and how often the manager chose the wrong specialist.</p>
+
+  <h2 id="writeup">Step 4: the one-page write-up</h2>
+  <p>Answer these in one page:</p>
+  <ol>
+    <li><strong>What it does</strong>, in two sentences a customer would understand.</li>
+    <li><strong>How it works</strong>: a simple diagram and one line per agent.</li>
+    <li><strong>How well it works</strong>: your test score, and the failures you found.</li>
+    <li><strong>What could go wrong</strong>: the biggest risk and how you reduced it.</li>
+    <li><strong>What you would do next.</strong></li>
+  </ol>
+
+  <h2 id="demo">Step 5: the demo</h2>
+  <p>Aim for <strong>5 minutes</strong>:</p>
+  <ol class="steps">
+    <li><strong>The problem</strong> (30 seconds): what the sales team struggles with.</li>
+    <li><strong>The live run</strong> (2 minutes): give the BDM one request and show the specialists being used. Open the execution so people see who did what.</li>
+    <li><strong>A failure on purpose</strong> (1 minute): show a request that should be refused or approved first, and what the system did.</li>
+    <li><strong>Your results</strong> (1 minute): the test score and one thing you fixed.</li>
+    <li><strong>Questions</strong> (30 seconds).</li>
+  </ol>
+  <div class="callout">
+    <span class="label">Prepare for live demos to go wrong</span>
+    Have a saved successful run ready to show. Test your internet and keys ten minutes before.
+  </div>
+
+  <h2 id="deliver">What to hand in</h2>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="plan"> Completed planning worksheet</label>
+    <label class="check"><input type="checkbox" data-check="workflows"> The five workflows, exported, with no keys inside</label>
+    <label class="check"><input type="checkbox" data-check="mcp"> Prospecting uses MCP tools, limited to what it needs</label>
+    <label class="check"><input type="checkbox" data-check="draft"> Nothing is sent without a person approving it</label>
+    <label class="check"><input type="checkbox" data-check="errors"> Retries, an error branch and an error workflow are set up</label>
+    <label class="check"><input type="checkbox" data-check="tests"> Ten tests written before fixing, with results</label>
+    <label class="check"><input type="checkbox" data-check="onepage"> The one-page write-up</label>
+    <label class="check"><input type="checkbox" data-check="demo"> A rehearsed 5-minute demo</label>
+  </div>
+
+  <h2 id="rubric">How it will be judged</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Area</th><th>Strong work looks like</th></tr></thead>
+    <tbody>
+      <tr><td>Design</td><td>Each agent has one clear job, a short prompt and only the tools it needs</td></tr>
+      <tr><td>Working system</td><td>The manager delegates correctly on most test requests</td></tr>
+      <tr><td>Safety</td><td>The trifecta is broken on purpose, nothing is sent unapproved, and no secrets are in files</td></tr>
+      <tr><td>Resilience</td><td>Failures are retried or recorded, not hidden</td></tr>
+      <tr><td>Honest testing</td><td>Tests written first, real results, fixes tied to causes</td></tr>
+      <tr><td>Communication</td><td>A clear write-up and a calm, rehearsed demo</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>The manager picks the wrong specialist</td><td>Tool names and descriptions overlap or are vague. Make each one say exactly what it does and does not do.</td></tr>
+      <tr><td>A specialist works alone but fails inside the manager</td><td>The manager passes it the wrong input. Look at the execution to see what was sent.</td></tr>
+      <tr><td>Prospecting returns nothing</td><td>The MCP connection or key is wrong, or the tool is not allowed. Test the tool alone.</td></tr>
+      <tr><td>Runs are slow or costly</td><td>Too many specialist calls, or long prompts. Trim, and answer simple requests directly.</td></tr>
+      <tr><td>Imported workflows show red credential warnings</td><td>Placeholder credentials. Select your own in each node.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What does the BDM manager agent do?</p>
+      <div class="opts">
+        <button type="button" class="opt">Does every task itself with one giant prompt</button>
+        <button type="button" class="opt">Only stores the data</button>
+        <button type="button" class="opt" data-correct>Understands the request, delegates to specialists, and combines their results</button>
+      </div>
+      <p class="why">It is the team lead. The specialists do the specific jobs.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. Why must the SDR agent only create drafts?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>A person should approve outreach before anything is sent</button>
+        <button type="button" class="opt">Drafts are cheaper</button>
+        <button type="button" class="opt">Email cannot be sent from n8n</button>
+      </div>
+      <p class="why">A sent message cannot be unsent, and AI makes mistakes.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. Why should Prospecting not be able to send data out or see private records?</p>
+      <div class="opts">
+        <button type="button" class="opt">It would run slower</button>
+        <button type="button" class="opt" data-correct>It reads untrusted web pages, so removing those abilities breaks the lethal trifecta</button>
+        <button type="button" class="opt">The web pages are always safe</button>
+      </div>
+      <p class="why">Untrusted content plus private data plus a way out is the dangerous combination.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. When should you write your test requests?</p>
+      <div class="opts">
+        <button type="button" class="opt">After everything works, to show off</button>
+        <button type="button" class="opt">Never. Testing is optional</button>
+        <button type="button" class="opt" data-correct>Before you start fixing problems</button>
+      </div>
+      <p class="why">Tests written first stop you from only checking what you already know works.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Which tools does the Prospecting agent use in this project?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Firecrawl and Hunter.io, through MCP</button>
+        <button type="button" class="opt">Gmail and Google Sheets only</button>
+        <button type="button" class="opt">No tools at all</button>
+      </div>
+      <p class="why">MCP connects the agent to outside services in a standard way.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Capstone</dt><dd>The final project that combines everything in the course.</dd>
+    <dt>BDM</dt><dd>Business development manager. Here, the manager agent that directs the others.</dd>
+    <dt>SDR</dt><dd>Sales development representative. Here, the agent that drafts outreach.</dd>
+    <dt>RevOps</dt><dd>Revenue operations. Here, the agent that records and checks sales data.</dd>
+    <dt>Account Executive</dt><dd>The person who talks to interested customers. Here, the agent that prepares meeting briefings.</dd>
+    <dt>ICP</dt><dd>Ideal Customer Profile. A description of the kind of company you most want to sell to.</dd>
+    <dt>Prospecting</dt><dd>Finding companies and contacts who might want your product.</dd>
+    <dt>Firecrawl</dt><dd>A service that reads web pages and returns their content in a form an AI can use.</dd>
+    <dt>Hunter.io</dt><dd>A service that finds work email addresses for a company.</dd>
+    <dt>Evaluation</dt><dd>Measuring how well the system works with a fixed set of tests.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>The capstone is a manager agent (BDM) with four specialists: Prospecting, SDR, RevOps and Account Executive.</li>
+    <li>Plan first, build each specialist alone, then assemble the manager. Draft, never send. Break the lethal trifecta on purpose.</li>
+    <li>Write ten tests before fixing, record honest results, and show your work in a one-page write-up and a five-minute demo.</li>
+  </ol>
+  <p><strong>Next:</strong> You have finished the course. You can now explain how agents work, build them in code and in n8n, give them voice, data and tools, and judge when they are safe to use. Keep building small projects, and keep testing honestly.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-19.html">&larr; Lesson 19</a>
+    <button type="button" class="secondary mid-btn" data-done="20">Mark this lesson as done</button>
+    <a class="btn" href="../index.html">All lessons</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

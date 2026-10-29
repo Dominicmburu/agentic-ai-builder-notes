@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 11: Voice agents with ElevenLabs | Agentic AI Builder</title>
+  <meta name="description" content="Build an AI that you can talk to, and find where it gets slow or goes off topic.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#what">What is ElevenLabs?</a></li>
+    <li><a href="#pipeline">How a voice agent works: ears, brain, mouth</a></li>
+    <li><a href="#prompt">Writing a prompt for voice</a></li>
+    <li><a href="#build">Build your first voice agent</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 3 · Lesson 11 · Core</p>
+  <h1>Voice agents with ElevenLabs</h1>
+  <p class="lead">Build an AI that you can talk to, and find where it gets slow or goes off topic.</p>
+  <div class="meta">
+    <span class="pill">About 40 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson11_Voice_Agents_ElevenLabs.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">A voice agent is the same AI you already know, with ears and a mouth added. It listens, thinks, then speaks. What makes it feel good or bad is speed and turn-taking.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Explain the difference between ElevenLabs' creative platform and its agents platform.</li>
+    <li>Create a conversational voice agent with a clear prompt and a chosen voice.</li>
+    <li>Test the agent live and identify where it is slow or goes off topic.</li>
+  </ul>
+
+  <h2 id="what">What is ElevenLabs?</h2>
+  <p>ElevenLabs is a company, founded in 2022, that is a leader in generating realistic audio. It has two parts that are easy to mix up:</p>
+  <div class="cards">
+    <div class="card"><h3>Creative platform</h3><p><strong>Makes audio.</strong> You give it text and it reads it aloud in a chosen voice, like a voice-over artist you can hire by the second.</p></div>
+    <div class="card"><h3>Agents platform</h3><p><strong>Runs a live conversation.</strong> It listens, thinks with a language model, and talks back, like a receptionist.</p></div>
+  </div>
+  <p><strong>Pricing:</strong> there is a generous free tier, and paid plans are monthly. Check the pricing page for current limits before you plan a big test.</p>
+
+  <h2 id="pipeline">How a voice agent works: ears, brain, mouth</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 200" role="img" aria-label="A voice agent turn: you speak, speech is turned into text, the language model decides a reply, the reply text is turned into speech, you hear it">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <rect x="6" y="30" width="118" height="64" rx="10" class="dg-soft"/><text x="65" y="57" text-anchor="middle" class="dg-t">You speak</text><text x="65" y="77" text-anchor="middle" class="dg-s">audio</text>
+      <rect x="142" y="30" width="118" height="64" rx="10" class="dg-box"/><text x="201" y="57" text-anchor="middle" class="dg-t">Ears</text><text x="201" y="77" text-anchor="middle" class="dg-s">speech to text</text>
+      <rect x="278" y="30" width="118" height="64" rx="10" class="dg-hot"/><text x="337" y="57" text-anchor="middle" class="dg-t">Brain</text><text x="337" y="77" text-anchor="middle" class="dg-s">language model</text>
+      <rect x="414" y="30" width="118" height="64" rx="10" class="dg-box"/><text x="473" y="57" text-anchor="middle" class="dg-t">Mouth</text><text x="473" y="77" text-anchor="middle" class="dg-s">text to speech</text>
+      <rect x="550" y="30" width="94" height="64" rx="10" class="dg-soft"/><text x="597" y="57" text-anchor="middle" class="dg-t">You hear</text><text x="597" y="77" text-anchor="middle" class="dg-s">audio</text>
+      <path d="M124 62H139" class="dg-l" marker-end="url(#ah)"/><path d="M260 62H275" class="dg-l" marker-end="url(#ah)"/><path d="M396 62H411" class="dg-l" marker-end="url(#ah)"/><path d="M532 62H547" class="dg-l" marker-end="url(#ah)"/>
+      <path d="M201 100V140H473V100" class="dg-la"/>
+      <text x="337" y="160" text-anchor="middle" class="dg-s">Every step adds a small delay. The total delay is called latency.</text>
+      <text x="337" y="182" text-anchor="middle" class="dg-s">Turn-taking: knowing when you have finished talking, and when you interrupt.</text>
+    </svg>
+    <figcaption>One turn of a voice conversation.</figcaption>
+  </figure>
+  <p>Two things decide whether it feels natural:</p>
+  <ul>
+    <li><strong>Latency.</strong> The pause between you finishing and the agent starting to answer. Long pauses feel awkward, like a bad phone line.</li>
+    <li><strong>Turn-taking.</strong> Knowing when you are done speaking and when you want to interrupt.</li>
+  </ul>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a receptionist</span>
+    A good receptionist answers quickly, speaks in short sentences, does not read out a whole catalogue, and stays on the subject. That is exactly what we want from a voice agent.
+  </div>
+
+  <h2 id="prompt">Writing a prompt for voice</h2>
+  <p>A prompt for voice differs from a prompt for chat. Spoken answers must be <strong>short and direct</strong>, because long ones sound unnatural and take longer to say.</p>
+  <ul>
+    <li>Ask for <strong>short sentences</strong> and a maximum length.</li>
+    <li>Ask for <strong>one question at a time</strong>.</li>
+    <li>No bullet points, emoji, or formatting symbols. They sound strange when read aloud.</li>
+    <li>Tell it what to do when it does not know.</li>
+    <li>Give it a <strong>first message</strong>, the greeting it says when a call begins.</li>
+  </ul>
+  <div class="prompt"><span class="label">Example system prompt</span>You are the phone assistant for Hillside Bakery in Nyeri.
+Your job is to answer questions about opening hours, the menu and how to order.
+Speak in short, friendly sentences. Keep every answer under three sentences.
+Ask only one question at a time.
+Never read out long lists. Give the two most useful items and offer to say more.
+If you do not know something, say "I'm not sure, but I can take a message."
+Only talk about the bakery. If asked about anything else, politely say you can only help with the bakery.</div>
+  <div class="prompt"><span class="label">Example first message</span>Hello, thanks for calling Hillside Bakery. How can I help you today?</div>
+
+  <h2 id="build">Build your first voice agent</h2>
+  <ol class="steps">
+    <li>Create an account on the ElevenLabs website and open the <strong>Agents</strong> area.</li>
+    <li>Choose <strong>Create an agent</strong> and give it a name.</li>
+    <li>Paste your <strong>first message</strong> and your <strong>system prompt</strong>.</li>
+    <li>Pick a <strong>voice</strong> that suits the job. Listen to a few. Warm and clear usually beats dramatic.</li>
+    <li>Choose the language, and the language model if the settings offer a choice. Faster models usually mean lower latency.</li>
+    <li>Use the test button to <strong>talk to it in your browser</strong>. Allow the microphone when your browser asks.</li>
+  </ol>
+  <div class="callout">
+    <span class="label">Menus change</span>
+    ElevenLabs updates its interface often. If a button has moved or has a new name, look for the same idea in the agent settings.
+  </div>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>Build a voice agent that answers <strong>three scripted questions</strong> about a topic you choose (a bakery, a bicycle shop, a school, a salon). Time each response and note any answer that drifts off topic.</p>
+  <ol class="steps">
+    <li>Write three questions in advance, for example: &ldquo;What time do you open on Saturday?&rdquo; &ldquo;Do you make birthday cakes?&rdquo; &ldquo;What is the cheapest thing on your menu?&rdquo;</li>
+    <li>Ask each one aloud. Use a phone stopwatch to time <strong>from when you stop talking until the agent starts answering</strong>.</li>
+    <li>Note whether the answer was on topic, correct for the information you gave it, and short enough.</li>
+    <li>Fix one problem in the prompt and ask the same questions again.</li>
+  </ol>
+  <div class="table-scroll">
+  <table class="fill-table">
+    <thead><tr><th>Question</th><th>Seconds to start answering</th><th>On topic? Short enough?</th></tr></thead>
+    <tbody>
+      <tr><td><input name="q1" aria-label="Question 1"></td><td><input name="q1t" aria-label="Question 1 seconds"></td><td><input name="q1n" aria-label="Question 1 notes"></td></tr>
+      <tr><td><input name="q2" aria-label="Question 2"></td><td><input name="q2t" aria-label="Question 2 seconds"></td><td><input name="q2n" aria-label="Question 2 notes"></td></tr>
+      <tr><td><input name="q3" aria-label="Question 3"></td><td><input name="q3t" aria-label="Question 3 seconds"></td><td><input name="q3n" aria-label="Question 3 notes"></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="agent"> My agent has a name, a first message, a prompt and a voice</label>
+    <label class="check"><input type="checkbox" data-check="timed"> I timed all three answers</label>
+    <label class="check"><input type="checkbox" data-check="drift"> I found at least one place it was slow or drifted, and I changed the prompt to fix it</label>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>It cannot hear you</td><td>The browser blocked the microphone. Allow it in the address bar settings, then reload.</td></tr>
+      <tr><td>Long pauses</td><td>A slow language model, a long prompt or a poor connection. Shorten the prompt and try a faster model.</td></tr>
+      <tr><td>It rambles</td><td>Add a clear length limit and a rule to give the top two items only.</td></tr>
+      <tr><td>It talks over you, or waits too long</td><td>Turn-taking settings need adjusting. Try speaking more clearly and check the agent's interruption settings.</td></tr>
+      <tr><td>It makes up an answer</td><td>Add a rule for what to say when it does not know. Week 3 shows how to give it real data.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What is the difference between ElevenLabs' creative platform and its agents platform?</p>
+      <div class="opts">
+        <button type="button" class="opt">The creative platform is free and the agents platform is a different company</button>
+        <button type="button" class="opt">There is no difference</button>
+        <button type="button" class="opt" data-correct>The creative platform generates audio. The agents platform runs a live conversation</button>
+      </div>
+      <p class="why">One is like hiring a voice-over artist. The other is like hiring a receptionist.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. Which three jobs does a voice agent do on every turn?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Listen (speech to text), think (language model), speak (text to speech)</button>
+        <button type="button" class="opt">Search, buy, deliver</button>
+        <button type="button" class="opt">Read, write, print</button>
+      </div>
+      <p class="why">Ears, brain, mouth.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. Which style of reply suits a voice agent best?</p>
+      <div class="opts">
+        <button type="button" class="opt">Long bulleted lists</button>
+        <button type="button" class="opt" data-correct>Short, direct sentences</button>
+        <button type="button" class="opt">Text full of emoji and symbols</button>
+      </div>
+      <p class="why">Short answers sound natural and arrive faster.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. What is latency?</p>
+      <div class="opts">
+        <button type="button" class="opt">The volume of the voice</button>
+        <button type="button" class="opt">The number of languages supported</button>
+        <button type="button" class="opt" data-correct>The delay between you finishing speaking and the agent starting to answer</button>
+      </div>
+      <p class="why">Every step in the pipeline adds a little delay, and the total is what you feel.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Your agent drifts off topic in a test. What is the best next step?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Add a clear rule to the prompt, then ask the same questions again</button>
+        <button type="button" class="opt">Switch off the microphone</button>
+        <button type="button" class="opt">Ignore it, because voice is always unpredictable</button>
+      </div>
+      <p class="why">Fix one thing, then re-test with the same questions.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>ElevenLabs</dt><dd>A company that makes realistic AI audio. It offers a creative platform and an agents platform.</dd>
+    <dt>Creative platform</dt><dd>ElevenLabs' tools for generating audio, such as reading text aloud in a chosen voice.</dd>
+    <dt>Agents platform</dt><dd>ElevenLabs' tools for running a live voice conversation with an AI.</dd>
+    <dt>Speech to text</dt><dd>Turning spoken audio into written words. The agent's ears.</dd>
+    <dt>Text to speech</dt><dd>Turning written words into spoken audio. The agent's mouth.</dd>
+    <dt>Latency</dt><dd>The delay between you finishing speaking and the agent starting to answer.</dd>
+    <dt>Turn-taking</dt><dd>Knowing when one speaker has finished so the other can start, including interruptions.</dd>
+    <dt>First message</dt><dd>The greeting a voice agent says when a conversation begins.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>A voice agent adds ears (speech to text) and a mouth (text to speech) to the language model brain.</li>
+    <li>Latency and turn-taking decide whether it feels natural. Short, direct prompts usually sound better.</li>
+    <li>Test with fixed questions, time each answer, and fix one problem at a time.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 12, Integrating ElevenLabs and n8n: two ways to join them, and how a webhook lets a voice agent trigger a workflow.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-10.html">&larr; Lesson 10</a>
+    <button type="button" class="secondary mid-btn" data-done="11">Mark this lesson as done</button>
+    <a class="btn" href="lesson-12.html">Lesson 12 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

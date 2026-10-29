@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 8: Connecting to Google Docs and Gmail | Agentic AI Builder</title>
+  <meta name="description" content="Choose the right way to log in, then build an agent that reads a document and drafts an email.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#auth">Three ways to log in</a></li>
+    <li><a href="#safety">Stay safe while you experiment</a></li>
+    <li><a href="#build">Build it: read a document, draft an email</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 2 · Lesson 8 · Integration</p>
+  <h1>Connecting to Google Docs and Gmail</h1>
+  <p class="lead">Choose the right way to log in, then build an agent that reads a document and drafts an email.</p>
+  <div class="meta">
+    <span class="pill">About 45 minutes to read</span>
+    <span class="pill integration">Integration</span>
+    <a class="pill" href="../downloads/Lesson8_Google_Docs_and_Gmail.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">To use your own documents and email, n8n needs permission to get in. There are three ways to give that permission, from easy to hard. Pick the easiest one that works, and keep a human in the loop.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Choose the right authentication pattern for an integration.</li>
+    <li>Connect Google Drive or Docs and Gmail to an agent.</li>
+    <li>Build an agent that reads a document and drafts an email reply.</li>
+  </ul>
+
+  <h2 id="auth">Three ways to log in</h2>
+  <p><strong>Authentication</strong> just means proving who you are and what you are allowed to do. Think of getting into a building.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Level</th><th>Pattern</th><th>What it is</th><th>Everyday comparison</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Easy</strong></td><td>API key</td><td>A simple password-style key you copy from the service and paste into n8n</td><td>A house key. Whoever holds it can enter</td></tr>
+      <tr><td><strong>Medium</strong></td><td>Pre-configured OAuth2 login</td><td>You click &ldquo;Sign in with Google&rdquo;. n8n has already done the hard setup for you. Google Sheets and Gmail work this way</td><td>A hotel keycard issued at reception. You approve it, and it can be cancelled</td></tr>
+      <tr><td><strong>Hard</strong></td><td>Full OAuth2 for a custom integration</td><td>You register your own app with the service and set up the login yourself. It takes patience</td><td>Applying to the council for your own keycard system</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>OAuth2</strong> is the &ldquo;Sign in with Google&rdquo; style of login. You never hand n8n your password. You approve a limited permission instead, and you can take it back at any time.</p>
+  <div class="callout">
+    <span class="label">Good to know</span>
+    Integrations are optional. Most services have a free tier. If you prefer a different service for storing documents or sending email, you can choose another. The ideas are the same.
+  </div>
+
+  <h2 id="safety">Stay safe while you experiment</h2>
+  <ul>
+    <li>Use a <strong>test document</strong> and, if you can, a spare or test email account.</li>
+    <li>Make the workflow create a <strong>draft</strong>. Do not send anything until you have read it.</li>
+    <li>Give the smallest permissions that do the job.</li>
+    <li>When you finish the course, <strong>remove</strong> the n8n access in your Google account settings.</li>
+  </ul>
+  <div class="callout warn">
+    <span class="label">Why drafts matter</span>
+    An AI can make a mistake and write something wrong, rude or private. A draft sits in your folder waiting for you. A sent email cannot be unsent.
+  </div>
+
+  <h2 id="build">Build it: read a document, draft an email</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 130" role="img" aria-label="Workflow: start, read the Google Doc, AI agent writes a summary and draft, Gmail saves it as a draft">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <rect x="8" y="30" width="136" height="64" rx="10" class="dg-box"/><text x="76" y="57" text-anchor="middle" class="dg-t">1. Start</text><text x="76" y="77" text-anchor="middle" class="dg-s">manual or chat</text>
+      <rect x="170" y="30" width="136" height="64" rx="10" class="dg-box"/><text x="238" y="57" text-anchor="middle" class="dg-t">2. Read doc</text><text x="238" y="77" text-anchor="middle" class="dg-s">Google Docs</text>
+      <rect x="332" y="30" width="136" height="64" rx="10" class="dg-hot"/><text x="400" y="57" text-anchor="middle" class="dg-t">3. AI Agent</text><text x="400" y="77" text-anchor="middle" class="dg-s">summary + draft</text>
+      <rect x="494" y="30" width="148" height="64" rx="10" class="dg-box"/><text x="568" y="57" text-anchor="middle" class="dg-t">4. Gmail</text><text x="568" y="77" text-anchor="middle" class="dg-s">create a draft</text>
+      <path d="M144 62H167" class="dg-l" marker-end="url(#ah)"/><path d="M306 62H329" class="dg-l" marker-end="url(#ah)"/><path d="M468 62H491" class="dg-l" marker-end="url(#ah)"/>
+    </svg>
+    <figcaption>Four nodes. Nothing is sent, only saved as a draft.</figcaption>
+  </figure>
+  <ol class="steps">
+    <li><strong>Prepare a test document</strong> in Google Docs: a short note, a meeting summary or a customer message. A page or less is perfect.</li>
+    <li><strong>Add a start node.</strong> A manual trigger is easiest while testing.</li>
+    <li><strong>Add the Google Docs node</strong> with the operation to <em>get</em> a document. Click <em>Sign in with Google</em> to connect, then give the document's link or ID. (You can use the Google Drive node to download a file instead.)</li>
+    <li><strong>Add an AI Agent</strong> with a chat model. In its prompt, pass in the document text. In n8n you do this with an expression, which is a small piece of code in double curly braces that pulls in data from an earlier node. You learn expressions properly in Lesson 9.</li>
+    <li><strong>Add the Gmail node</strong>, choose the draft resource and the <em>create</em> operation. Set a subject, and set the message to the agent's output.</li>
+    <li><strong>Run it by hand.</strong> Open Gmail and read the draft before doing anything else.</li>
+  </ol>
+  <div class="prompt"><span class="label">Prompt for the agent</span>You write short, polite email replies.
+Read the document below. Then write:
+1. A summary in three sentences.
+2. A draft email to the sender, in plain friendly language.
+Use only facts from the document. If something is unclear, say so in the email instead of guessing.
+
+DOCUMENT:
+(the document text goes here, inserted by n8n)</div>
+  <div class="callout">
+    <span class="label">Where to find the agent's answer</span>
+    The AI Agent node puts its answer in a field called <code>output</code>. To use it in the Gmail message, switch the field to expression mode and enter <code>{{ $json.output }}</code>.
+  </div>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>Read a document from Drive, summarise it with the model, and save the summary as a draft email. <strong>Send nothing until you have checked the draft.</strong></p>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="auth"> I connected Google with the &ldquo;Sign in with Google&rdquo; login, not by pasting a password</label>
+    <label class="check"><input type="checkbox" data-check="read"> The workflow reads my test document</label>
+    <label class="check"><input type="checkbox" data-check="draft"> A draft appears in Gmail</label>
+    <label class="check"><input type="checkbox" data-check="check"> I read the draft and compared it with the document for mistakes</label>
+    <label class="check"><input type="checkbox" data-check="level"> I can explain easy, medium and hard authentication in my own words</label>
+  </div>
+  <table class="fill-table">
+    <thead><tr><th>Check</th><th>Your notes</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Mistakes or invented facts in the draft</th><td><input name="mistakes" aria-label="Mistakes in the draft"></td></tr>
+      <tr><th scope="row">What I changed in the prompt to improve it</th><td><input name="changes" aria-label="Prompt changes"></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>Google shows a warning screen while connecting</td><td>Read it carefully. Use your own account, approve only the permissions needed, and continue only if you started the connection yourself.</td></tr>
+      <tr><td>&ldquo;Not found&rdquo; for the document</td><td>Wrong link or ID, or your Google account has no access to it.</td></tr>
+      <tr><td>The draft says <code>undefined</code> or is empty</td><td>The expression points to the wrong field. Click the previous node and look at its output.</td></tr>
+      <tr><td>The summary invents things</td><td>Add &ldquo;use only facts from the document&rdquo; and a rule to say when something is unclear.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. Which authentication pattern is a simple password-style key?</p>
+      <div class="opts">
+        <button type="button" class="opt">Full OAuth2 for a custom integration</button>
+        <button type="button" class="opt">Sign in with Google</button>
+        <button type="button" class="opt" data-correct>An API key</button>
+      </div>
+      <p class="why">An API key is the easy pattern: copy it from the service and keep it secret.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. In n8n cloud, how do Google Sheets and Gmail usually connect?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Pre-configured OAuth2 login: n8n has already done the setup</button>
+        <button type="button" class="opt">You must register your own app first</button>
+        <button type="button" class="opt">You paste your Google password into n8n</button>
+      </div>
+      <p class="why">That is the medium pattern. You click sign in and approve the permission.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. Why should the workflow create a draft instead of sending the email?</p>
+      <div class="opts">
+        <button type="button" class="opt">Drafts are faster</button>
+        <button type="button" class="opt" data-correct>So a person can check it before anything goes out</button>
+        <button type="button" class="opt">Gmail cannot send emails from n8n</button>
+      </div>
+      <p class="why">AI can make mistakes. A draft keeps a human in control.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. Which pattern needs the most patience?</p>
+      <div class="opts">
+        <button type="button" class="opt">API key</button>
+        <button type="button" class="opt">Pre-configured OAuth2 login</button>
+        <button type="button" class="opt" data-correct>Full OAuth2 for a custom integration</button>
+      </div>
+      <p class="why">You set up the registration and login yourself.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Must you use Google for these integrations?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>No. Integrations are optional and you can choose different services</button>
+        <button type="button" class="opt">Yes, nothing else works</button>
+        <button type="button" class="opt">Yes, but only for paid users</button>
+      </div>
+      <p class="why">The patterns apply to any service. Most have free tiers.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Authentication</dt><dd>Proving who you are and what you are allowed to do.</dd>
+    <dt>API key</dt><dd>A simple password-style credential copied from a service. Keep it secret.</dd>
+    <dt>OAuth2</dt><dd>The 'Sign in with Google' style of login. You approve limited permissions without sharing your password.</dd>
+    <dt>Pre-configured OAuth2</dt><dd>OAuth2 where n8n has already done the hard setup. You just click sign in.</dd>
+    <dt>Integration</dt><dd>A connection between n8n and another service, such as Gmail or Google Drive.</dd>
+    <dt>Draft</dt><dd>An email saved but not sent.</dd>
+    <dt>Expression</dt><dd>A small piece of code in double curly braces that pulls data into a field. Explained in Lesson 9.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>Three ways to log in: API key (easy), pre-configured OAuth2 (medium), full OAuth2 (hard). Pick the easiest that works.</li>
+    <li>Use test documents and create drafts. Read everything before anything is sent.</li>
+    <li>A document-to-draft workflow is four nodes: start, read, AI agent, Gmail draft.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 9, Data and integrations: read and write JSON inside n8n, use expressions to pull values from earlier nodes, and receive data through a webhook.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-7.html">&larr; Lesson 7</a>
+    <button type="button" class="secondary mid-btn" data-done="8">Mark this lesson as done</button>
+    <a class="btn" href="lesson-9.html">Lesson 9 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

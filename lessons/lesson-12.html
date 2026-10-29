@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 12: Joining ElevenLabs and n8n: two patterns | Agentic AI Builder</title>
+  <meta name="description" content="Choose who runs the show, and use a webhook as the bridge.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#patterns">The two patterns</a></li>
+    <li><a href="#webhook-bridge">The bridge: a webhook</a></li>
+    <li><a href="#pattern-a">Pattern A in practice</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 3 · Lesson 12 · Core</p>
+  <h1>Joining ElevenLabs and n8n: two patterns</h1>
+  <p class="lead">Choose who runs the show, and use a webhook as the bridge.</p>
+  <div class="meta">
+    <span class="pill">About 45 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson12_ElevenLabs_and_n8n.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">There are two ways to join a voice agent to n8n. In Pattern A, n8n runs everything and borrows ElevenLabs for speech. In Pattern B, ElevenLabs runs the conversation and calls an n8n workflow when it needs something done.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Compare the two integration patterns and choose one for a project.</li>
+    <li>Call ElevenLabs for text-to-speech and speech-to-text from an n8n workflow.</li>
+    <li>Give a voice agent a tool that triggers an n8n workflow.</li>
+  </ul>
+
+  <h2 id="patterns">The two patterns</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 270" role="img" aria-label="Pattern A: n8n runs the whole workflow and calls ElevenLabs for speech. Pattern B: the ElevenLabs agent runs the conversation and calls an n8n workflow through a webhook.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <text x="10" y="22" class="dg-h">PATTERN A: n8n RUNS THE SHOW</text>
+      <rect x="10" y="36" width="120" height="60" rx="10" class="dg-soft"/><text x="70" y="62" text-anchor="middle" class="dg-t">Caller</text><text x="70" y="80" text-anchor="middle" class="dg-s">audio in and out</text>
+      <rect x="195" y="36" width="210" height="60" rx="10" class="dg-hot"/><text x="300" y="62" text-anchor="middle" class="dg-t">n8n workflow</text><text x="300" y="80" text-anchor="middle" class="dg-s">runs every step, calls the AI</text>
+      <rect x="470" y="36" width="170" height="60" rx="10" class="dg-box"/><text x="555" y="62" text-anchor="middle" class="dg-t">ElevenLabs speech</text><text x="555" y="80" text-anchor="middle" class="dg-s">speech in and out</text>
+      <path d="M130 66H192" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M405 66H467" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="10" y="148" class="dg-h">PATTERN B: ELEVENLABS RUNS THE SHOW</text>
+      <rect x="10" y="162" width="120" height="60" rx="10" class="dg-soft"/><text x="70" y="188" text-anchor="middle" class="dg-t">Caller</text><text x="70" y="206" text-anchor="middle" class="dg-s">audio in and out</text>
+      <rect x="195" y="162" width="210" height="60" rx="10" class="dg-hot"/><text x="300" y="188" text-anchor="middle" class="dg-t">ElevenLabs agent</text><text x="300" y="206" text-anchor="middle" class="dg-s">listens, thinks, speaks</text>
+      <rect x="470" y="162" width="170" height="60" rx="10" class="dg-box"/><text x="555" y="188" text-anchor="middle" class="dg-t">n8n workflow</text><text x="555" y="206" text-anchor="middle" class="dg-s">does the task</text>
+      <path d="M130 192H192" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M405 192H467" class="dg-la" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="436" y="182" text-anchor="middle" class="dg-s">webhook</text>
+    </svg>
+    <figcaption>Who is in charge: the box in the middle that is outlined in red.</figcaption>
+  </figure>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th></th><th>Pattern A: n8n orchestrates</th><th>Pattern B: ElevenLabs orchestrates</th></tr></thead>
+    <tbody>
+      <tr><td><strong>How it works</strong></td><td>The whole workflow runs in n8n. n8n calls ElevenLabs when it needs speech.</td><td>The voice agent runs in ElevenLabs. It calls an n8n workflow as a tool.</td></tr>
+      <tr><td><strong>Strengths</strong></td><td>Simple. Everything is in one place. Easy to swap one service for another.</td><td>Lower latency. Access to advanced voice features.</td></tr>
+      <tr><td><strong>Moving parts</strong></td><td>Fewer</td><td>More: two systems to keep in step</td></tr>
+      <tr><td><strong>Best when</strong></td><td>You process audio or text in batches, or want one place to manage everything</td><td>You need a natural live conversation that sometimes triggers actions</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: who answers the phone</span>
+    Pattern A: you answer the phone yourself and ask a translator to help each time. Pattern B: a receptionist answers the phone and walks over to you only when something needs doing.
+  </div>
+
+  <h2 id="webhook-bridge">The bridge: a webhook</h2>
+  <p>In Pattern B, the voice agent needs a way to ask n8n to do something. That bridge is the <strong>webhook</strong> from Lesson 9: an address that wakes up a workflow. The agent's &ldquo;tool&rdquo; is simply a call to that address.</p>
+  <ol class="steps">
+    <li><strong>In n8n:</strong> add a <strong>Webhook</strong> node. Set the method to POST and choose a path. Set it to respond using a <strong>Respond to Webhook</strong> node, so the answer goes back to the agent.</li>
+    <li><strong>Do the work.</strong> For a callback booking, add a node that writes a row to a Google Sheet with the name, phone number and time.</li>
+    <li><strong>Reply.</strong> Add a <strong>Respond to Webhook</strong> node that returns a short answer such as <code>{"result": "Callback booked for 3 pm"}</code>.</li>
+    <li><strong>In ElevenLabs:</strong> open the agent's tools and add a <strong>webhook</strong> tool (some versions call it a server tool). Paste the n8n address, choose POST, and describe the tool in plain words: &ldquo;Use this to book a callback. It needs the caller's name, phone number and preferred time.&rdquo;</li>
+    <li><strong>Tell the agent when to use it,</strong> in its system prompt.</li>
+  </ol>
+  <div class="callout warn">
+    <span class="label">Test address or production address?</span>
+    The <strong>test URL</strong> in n8n only works while you are actively listening for a test event. A live agent needs the <strong>production URL</strong>, and the workflow must be active. This is the most common reason a tool &ldquo;works in n8n but not from the agent&rdquo;.
+  </div>
+  <div class="callout warn">
+    <span class="label">Lock the door</span>
+    A webhook is public to anyone who has the address. If the tool settings let you add a secret header, add one, and make the n8n Webhook node require it, so only your agent can trigger the workflow.
+  </div>
+
+  <h2 id="pattern-a">Pattern A in practice</h2>
+  <p>In Pattern A, n8n calls ElevenLabs the same way it calls any API, using the <strong>HTTP Request</strong> node. The key goes in a header, as in Lesson 1.</p>
+  <ul>
+    <li><strong>Text to speech:</strong> a POST request that sends the reply text and chooses a voice. It returns audio.</li>
+    <li><strong>Speech to text:</strong> a POST request that sends an audio file. It returns the written words.</li>
+  </ul>
+  <p>The exact address, header names and fields are in the ElevenLabs API documentation, and they change from time to time. Always copy from the current docs. Store the key in an n8n credential, never inside the workflow text.</p>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>Build the <strong>same task both ways</strong>, such as booking a callback. Then compare.</p>
+  <ol class="steps">
+    <li><strong>Task:</strong> a caller gives a name, a phone number and a time. The system saves a row in a sheet and confirms.</li>
+    <li><strong>Pattern B build:</strong> an ElevenLabs agent with a webhook tool that calls an n8n workflow.</li>
+    <li><strong>Pattern A build:</strong> an n8n workflow that takes the request as text, writes the row, and uses text to speech to produce a spoken confirmation.</li>
+    <li><strong>Compare</strong> the two using the table below.</li>
+  </ol>
+  <div class="table-scroll">
+  <table class="fill-table">
+    <thead><tr><th>Question</th><th>Pattern A</th><th>Pattern B</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Seconds from request to spoken reply</th><td><input name="a-lat" aria-label="Pattern A latency"></td><td><input name="b-lat" aria-label="Pattern B latency"></td></tr>
+      <tr><th scope="row">Number of moving parts (tools and services)</th><td><input name="a-parts" aria-label="Pattern A parts"></td><td><input name="b-parts" aria-label="Pattern B parts"></td></tr>
+      <tr><th scope="row">How hard was it to change the confirmation wording?</th><td><input name="a-change" aria-label="Pattern A change effort"></td><td><input name="b-change" aria-label="Pattern B change effort"></td></tr>
+      <tr><th scope="row">Which would I pick for this task, and why?</th><td colspan="2"><input name="pick" aria-label="My pick and why"></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>The agent says it could not reach the tool</td><td>It is calling the test URL, or the workflow is not active. Use the production URL and activate the workflow.</td></tr>
+      <tr><td>Error 404</td><td>The path in the address does not match the Webhook node.</td></tr>
+      <tr><td>The tool is called but nothing is saved</td><td>The agent's inputs arrive under <code>body</code>. Check the field names in the Webhook node's output.</td></tr>
+      <tr><td>The agent never calls the tool</td><td>The tool description is vague, or the prompt does not say when to use it.</td></tr>
+      <tr><td>Error 401 from ElevenLabs (Pattern A)</td><td>The key header is missing or wrong.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. In Pattern A, who runs the whole workflow?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>n8n, which calls ElevenLabs when it needs speech</button>
+        <button type="button" class="opt">The ElevenLabs agent</button>
+        <button type="button" class="opt">The caller</button>
+      </div>
+      <p class="why">Pattern A is n8n orchestration.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. What are the main strengths of Pattern B?</p>
+      <div class="opts">
+        <button type="button" class="opt">It has fewer moving parts</button>
+        <button type="button" class="opt" data-correct>Lower latency and access to advanced voice features</button>
+        <button type="button" class="opt">It never needs a webhook</button>
+      </div>
+      <p class="why">Pattern B lets ElevenLabs run the conversation natively. The price is two systems to keep in step.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. What is the bridge between a voice agent and an n8n workflow in Pattern B?</p>
+      <div class="opts">
+        <button type="button" class="opt">An email</button>
+        <button type="button" class="opt">A spreadsheet</button>
+        <button type="button" class="opt" data-correct>A webhook</button>
+      </div>
+      <p class="why">The agent's tool calls the webhook address, which starts the workflow.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. Which pattern is simplest and keeps everything in one place?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Pattern A</button>
+        <button type="button" class="opt">Pattern B</button>
+        <button type="button" class="opt">Neither, both are equally complex</button>
+      </div>
+      <p class="why">Pattern A has fewer moving parts and makes it easy to swap one service for another.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. A webhook tool works when you test in n8n but fails from the live agent. What is the likely cause?</p>
+      <div class="opts">
+        <button type="button" class="opt">The voice is too quiet</button>
+        <button type="button" class="opt" data-correct>The agent uses the test URL, or the workflow is not active</button>
+        <button type="button" class="opt">The webhook is too short</button>
+      </div>
+      <p class="why">A live agent needs the production URL, and the workflow must be active.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Pattern A</dt><dd>n8n orchestration: the whole workflow runs in n8n, which calls ElevenLabs for speech.</dd>
+    <dt>Pattern B</dt><dd>ElevenLabs orchestration: the voice agent runs the conversation and calls an n8n workflow as a tool.</dd>
+    <dt>Orchestration</dt><dd>Deciding which part runs, and in what order. Who is in charge.</dd>
+    <dt>Webhook tool</dt><dd>A tool for a voice agent that calls a webhook address to trigger a workflow.</dd>
+    <dt>Production URL</dt><dd>The webhook address that works while the workflow is active. Use it for live agents.</dd>
+    <dt>Test URL</dt><dd>The webhook address that only works while you are listening for a test event in n8n.</dd>
+    <dt>HTTP Request node</dt><dd>An n8n node that calls any web API, including ElevenLabs.</dd>
+    <dt>Respond to Webhook</dt><dd>An n8n node that sends an answer back to whoever called the webhook.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>Pattern A: n8n runs everything and borrows ElevenLabs for speech. Simple, one place, easy to swap services.</li>
+    <li>Pattern B: ElevenLabs runs the conversation and calls n8n as a tool. Lower latency, advanced voice features, more parts.</li>
+    <li>A webhook is the bridge. Use the production URL for live agents, and lock the door with a secret header where you can.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 13, RAG and agentic RAG: how to let an AI answer from your own documents instead of guessing.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-11.html">&larr; Lesson 11</a>
+    <button type="button" class="secondary mid-btn" data-done="12">Mark this lesson as done</button>
+    <a class="btn" href="lesson-13.html">Lesson 13 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 5: Project: a tool-using assistant with memory | Agentic AI Builder</title>
+  <meta name="description" content="Build a small assistant, test it honestly, and report what failed.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#brief">The brief</a></li>
+    <li><a href="#deliverables">What you must hand in</a></li>
+    <li><a href="#plan">How to build it, one stage at a time</a></li>
+    <li><a href="#starter">Optional starter skeleton (for script builders)</a></li>
+    <li><a href="#tests">Building your 20-prompt test set</a></li>
+    <li><a href="#report">The report</a></li>
+    <li><a href="#rubric">How the project is marked</a></li>
+    <li><a href="#tips">Troubleshooting</a></li>
+    <li><a href="#extensions">If you finish early</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 1 · Lesson 5 · Project</p>
+  <h1>Project: a tool-using assistant with memory</h1>
+  <p class="lead">Build a small assistant, test it honestly, and report what failed.</p>
+  <div class="meta">
+    <span class="pill">About 40 minutes to read</span>
+    <span class="pill project">Project</span>
+    <a class="pill" href="../downloads/Lesson5_Project_Assistant_with_Memory.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="brief">The brief</h2>
+  <div class="callout big">Build a chat assistant that remembers facts about the user, calls two tools only when it needs them, and passes a fixed test of 20 prompts.</div>
+  <p>This project brings together everything from Week 1: how an AI reads text, how to write instructions, how memory really works, and how tools work. You also practise the habit that separates builders from demo-makers: <strong>testing</strong>.</p>
+
+  <h2 id="deliverables">What you must hand in</h2>
+  <p>Tick each box as you finish it. Your ticks are saved in this browser.</p>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="prompt"> A <strong>system prompt</strong> that sets the role and the output format</label>
+    <label class="check"><input type="checkbox" data-check="memory"> <strong>Memory:</strong> the assistant recalls at least three facts about the user across ten turns</label>
+    <label class="check"><input type="checkbox" data-check="tools"> <strong>Two tools:</strong> a calculator, plus a date tool or a note-saving tool. Each is called only when needed</label>
+    <label class="check"><input type="checkbox" data-check="tests"> A <strong>test set of 20 prompts</strong> with the expected result for each</label>
+    <label class="check"><input type="checkbox" data-check="report"> A short <strong>report</strong>: the pass rate and the three worst failures</label>
+  </div>
+  <p><strong>Target:</strong> at least 80% of the 20 prompts pass (16 or more).</p>
+
+  <h2 id="plan">How to build it, one stage at a time</h2>
+  <p>Do not build everything at once. Finish each stage and test it before moving on.</p>
+  <ol class="steps">
+    <li><strong>A chat that remembers.</strong> Re-send the history each turn, exactly as in Lesson 4. Test with a name and a favourite colour.</li>
+    <li><strong>A system prompt.</strong> Write the role and the rules, using the five-part recipe from Lesson 3. Include a rule such as &ldquo;Do not call a tool when you can answer directly.&rdquo;</li>
+    <li><strong>The calculator tool.</strong> Describe it clearly. Tell the AI to use it for any arithmetic.</li>
+    <li><strong>The second tool.</strong> A note-saver that stores a note, or a date tool that returns today's date.</li>
+    <li><strong>The test set.</strong> Run all 20 prompts, read the failures, improve the system prompt or tool descriptions, and run again. Change one thing at a time.</li>
+  </ol>
+  <p><strong>Where to build:</strong> any chat tool that supports tool calls, or a short script. n8n arrives next week, so do not use it yet.</p>
+
+  <h2 id="starter">Optional starter skeleton (for script builders)</h2>
+  <p>This gives you the structure. The parts marked <code>TODO</code> are yours to finish. It is deliberately incomplete.</p>
+  <div class="codebox"><pre><code>import json
+import os
+import requests
+
+API_KEY = os.environ["OPENROUTER_API_KEY"]
+URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL = "MODEL_ID"        # pick a model that supports tool calls
+MAX_ROUNDS = 5            # safety limit for the agent loop
+
+SYSTEM_PROMPT = "TODO: role, rules, when to use each tool, when not to"
+
+TOOLS = [
+    {"type": "function", "function": {
+        "name": "calculator",
+        "description": "TODO: say exactly when to use it",
+        "parameters": {"type": "object",
+                       "properties": {"expression": {"type": "string"}},
+                       "required": ["expression"]}}},
+    # TODO: describe your second tool the same way
+]
+
+def calculator(expression):
+    # TODO: calculate safely. Do NOT use eval() on text from an AI.
+    return "not built yet"
+
+TOOL_FUNCS = {"calculator": calculator}
+
+def call_model(messages):
+    resp = requests.post(
+        URL,
+        headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
+        json={"model": MODEL, "messages": messages, "tools": TOOLS},
+        timeout=90,
+    )
+    return resp.json()["choices"][0]["message"]
+
+def run_turn(history):
+    for _ in range(MAX_ROUNDS):
+        message = call_model([{"role": "system", "content": SYSTEM_PROMPT}] + history)
+        history.append(message)
+        if not message.get("tool_calls"):
+            return message.get("content", "")
+        for call in message["tool_calls"]:
+            name = call["function"]["name"]
+            args = json.loads(call["function"]["arguments"])
+            # TODO: run the tool, then add its result to history
+            # as {"role": "tool", "tool_call_id": call["id"], "content": result}
+    return "Sorry, I could not finish that."</code></pre></div>
+
+  <h2 id="tests">Building your 20-prompt test set</h2>
+  <p>A good test set covers the different things your assistant must do. Aim for roughly this mix:</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Group</th><th>How many</th><th>Example</th><th>What it proves</th></tr></thead>
+    <tbody>
+      <tr><td>Needs the calculator</td><td>7 or 8</td><td>&ldquo;What is 15% of 2400?&rdquo; Expected: 360, with the calculator called</td><td>The tool works and the answer is right</td></tr>
+      <tr><td>Needs no tool</td><td>4</td><td>&ldquo;What is the capital of Kenya?&rdquo; Expected: Nairobi, with no tool called</td><td>The assistant does not over-use tools</td></tr>
+      <tr><td>Needs your second tool</td><td>3 or 4</td><td>&ldquo;Save a note: buy paper on Friday.&rdquo; Expected: note saved</td><td>The second tool works</td></tr>
+      <tr><td>Memory recall</td><td>3 or 4</td><td>After telling it your name earlier: &ldquo;What is my name?&rdquo;</td><td>Facts survive across turns</td></tr>
+      <tr><td>Edge case</td><td>1 or 2</td><td>&ldquo;What is 10 divided by 0?&rdquo; Expected: a sensible explanation, no crash</td><td>It handles trouble gracefully</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Write each test <strong>before</strong> you run it, including the expected result. Here is a simple template you can copy into a spreadsheet:</p>
+  <div class="codebox"><div class="caption">test-set.csv</div><pre><code>number,prompt,expected_answer,tool_expected,passed,notes
+1,What is 15% of 2400?,360,calculator,,
+2,What is the capital of Kenya?,Nairobi,none,,
+3,Save a note: buy paper on Friday.,note saved,save_note,,</code></pre></div>
+  <div class="callout warn">
+    <span class="label">Be honest with your scores</span>
+    Decide what counts as a pass <strong>before</strong> you run the test. Changing the expected answers afterwards to make your score look better defeats the point. An honest 70% with a good failure report beats a suspicious 100%.
+  </div>
+
+  <h2 id="report">The report</h2>
+  <p>Keep it to one page. Use this shape:</p>
+  <div class="prompt"><span class="label">Report template</span>Pass rate: __ out of 20 (__%)
+What my assistant can do: (one or two sentences)
+
+Failure 1: the prompt, what I expected, what happened, the likely cause, and my fix.
+Failure 2: the same.
+Failure 3: the same.
+
+What I would improve next:</div>
+  <p><strong>A strong failure note looks like this:</strong> &ldquo;Prompt 12, &lsquo;What is 12.5% of 480?&rsquo; Expected the calculator. The assistant answered 60 without calling it. Likely cause: my system prompt said &lsquo;use the calculator for maths&rsquo; but was not firm. Fix: changed it to &lsquo;for ANY arithmetic, always call the calculator&rsquo;. Pass rate went from 14 to 16 of 20.&rdquo;</p>
+
+  <h2 id="rubric">How the project is marked</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Area</th><th>Points</th><th>Full marks when</th></tr></thead>
+    <tbody>
+      <tr><td>System prompt</td><td>15</td><td>States the role, the rules, and when not to use tools</td></tr>
+      <tr><td>Memory</td><td>20</td><td>Recalls three or more user facts across ten turns, shown in a transcript</td></tr>
+      <tr><td>Tools</td><td>25</td><td>Two tools work, each called only when needed, errors handled</td></tr>
+      <tr><td>Test set</td><td>25</td><td>20 prompts with expected results, run honestly, pass rate reported</td></tr>
+      <tr><td>Failure report</td><td>15</td><td>Three worst failures, each with a cause and a fix</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="tips">Troubleshooting</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Problem</th><th>Likely cause</th><th>Try this</th></tr></thead>
+    <tbody>
+      <tr><td>The tool is never called</td><td>The model does not support tools, or the tool description is vague</td><td>Switch to a model that supports tools. Rewrite the description to say exactly when to use it.</td></tr>
+      <tr><td>A tool is called for easy questions</td><td>The prompt says nothing about restraint</td><td>Add &ldquo;Do not call a tool when you can answer directly.&rdquo;</td></tr>
+      <tr><td>The tool gets the wrong inputs</td><td>Unclear input descriptions</td><td>Add an example to the input description</td></tr>
+      <tr><td>It forgets a fact</td><td>History was reset, or trimmed too much</td><td>Print what is actually sent on each call</td></tr>
+      <tr><td>An error after trimming history</td><td>A tool result was sent without the message that asked for it</td><td>When trimming, start the window at a user message</td></tr>
+      <tr><td>Error 429</td><td>Free model rate limit</td><td>Slow down between prompts, or use a paid model on test day</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="extensions">If you finish early</h2>
+  <ul>
+    <li>Add a third tool, such as the current time.</li>
+    <li>Summarise old messages instead of dropping them.</li>
+    <li>Show how many tokens each reply used.</li>
+    <li>Save the history to a file so the chat resumes tomorrow.</li>
+  </ul>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. When should you write the expected result for a test prompt?</p>
+      <div class="opts">
+        <button type="button" class="opt">After you see the answer, so it matches</button>
+        <button type="button" class="opt">Only for the prompts that fail</button>
+        <button type="button" class="opt" data-correct>Before you run the test</button>
+      </div>
+      <p class="why">Deciding in advance keeps the score honest.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. Your assistant answers a simple sum without calling the calculator. What is the best first fix?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>Make the system prompt firmer: for ANY arithmetic, always call the calculator</button>
+        <button type="button" class="opt">Delete that test prompt</button>
+        <button type="button" class="opt">Turn the temperature up</button>
+      </div>
+      <p class="why">Unclear instructions are the usual cause. Fix the prompt, then re-run the same test.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. Which test prompt checks that the assistant does NOT over-use tools?</p>
+      <div class="opts">
+        <button type="button" class="opt">What is 15% of 2400?</button>
+        <button type="button" class="opt" data-correct>What is the capital of Kenya? Expected: Nairobi, with no tool called</button>
+        <button type="button" class="opt">Save a note: buy paper</button>
+      </div>
+      <p class="why">A good test set includes cases where the right move is to use no tool at all.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. You scored 14 out of 20. The target is 80%. What do you do?</p>
+      <div class="opts">
+        <button type="button" class="opt">Edit the expected answers until you reach 16</button>
+        <button type="button" class="opt">Change five things at once and hope</button>
+        <button type="button" class="opt" data-correct>Read the failures, fix the likely cause, change one thing, and run again</button>
+      </div>
+      <p class="why">14 out of 20 is 70%. Improve the prompt or tools, then re-test honestly.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Why must the loop have a maximum number of rounds?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>So a confused assistant cannot keep calling tools forever</button>
+        <button type="button" class="opt">To make answers shorter</button>
+        <button type="button" class="opt">Because tools only work five times</button>
+      </div>
+      <p class="why">A safety limit stops runaway loops, which waste money and time.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>Test set</dt><dd>A fixed list of prompts with expected results, used to score an assistant fairly.</dd>
+    <dt>Pass rate</dt><dd>The share of test prompts the assistant got right, for example 16 of 20 is 80%.</dd>
+    <dt>Expected result</dt><dd>What you decided, before the test, would count as a correct answer.</dd>
+    <dt>Over-using tools</dt><dd>Calling a tool when a direct answer would do.</dd>
+    <dt>Failure report</dt><dd>A short write-up of the worst test failures, their causes and the fixes.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>Build in stages: memory, then the system prompt, then each tool, then the test set.</li>
+    <li>Write every test and its expected result before running it, and score honestly.</li>
+    <li>Read the failures, change one thing at a time, and re-test. Report the three worst failures and what you did about them.</li>
+  </ol>
+  <p><strong>Next:</strong> Week 2 begins. In Lesson 6 you meet n8n and build your first AI agent without writing code: the same ideas, drawn as connected boxes.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-4.html">&larr; Lesson 4</a>
+    <button type="button" class="secondary mid-btn" data-done="5">Mark this lesson as done</button>
+    <a class="btn" href="lesson-6.html">Lesson 6 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

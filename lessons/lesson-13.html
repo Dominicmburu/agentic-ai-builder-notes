@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 13: RAG and agentic RAG | Agentic AI Builder</title>
+  <meta name="description" content="How an AI answers from your own documents instead of guessing.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#why">Why do we need it?</a></li>
+    <li><a href="#embeddings">Embeddings: turning meaning into numbers</a></li>
+    <li><a href="#chunking">Chunking: cutting documents into pieces</a></li>
+    <li><a href="#phases">The two phases</a></li>
+    <li><a href="#agentic">Standard RAG and agentic RAG</a></li>
+    <li><a href="#grounding">Making the AI stay honest</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 3 · Lesson 13 · Core</p>
+  <h1>RAG and agentic RAG</h1>
+  <p class="lead">How an AI answers from your own documents instead of guessing.</p>
+  <div class="meta">
+    <span class="pill">About 45 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson13_RAG_and_Agentic_RAG.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">RAG stands for Retrieval-Augmented Generation. In plain words: before the AI answers, it looks up the right pages in your documents, then answers using only those pages.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Explain embeddings, chunking and similarity search in simple terms.</li>
+    <li>Describe the two phases of RAG: ingestion and answering.</li>
+    <li>Explain how agentic RAG differs from standard RAG.</li>
+  </ul>
+
+  <h2 id="why">Why do we need it?</h2>
+  <p>A language model only knows what it learned in training. It has never seen your price list, your policies or your product sheets. If you ask, it may <strong>guess</strong>, and a confident guess is the worst kind of wrong answer.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: an open-book exam</span>
+    A closed-book exam tests memory. An open-book exam lets the student find the right page, then answer from it. RAG turns your AI into an open-book student, and the book is your documents.
+  </div>
+
+  <h2 id="embeddings">Embeddings: turning meaning into numbers</h2>
+  <p>A computer cannot compare meaning directly. So we turn each piece of text into a long list of numbers called an <strong>embedding</strong>. Texts with similar meaning get similar numbers.</p>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a map</span>
+    Imagine a map where every sentence is a pin. &ldquo;How do I return shoes?&rdquo; and &ldquo;What is your refund policy?&rdquo; land close together. &ldquo;Best pizza in town&rdquo; lands far away. The numbers are the pin's coordinates.
+  </div>
+  <p>To find relevant text, we turn the question into a pin too, and fetch the nearest pins. This is called <strong>similarity search</strong>. Try it:</p>
+  <div class="demo" data-widget="similarity"></div>
+  <p>Real embeddings have hundreds or thousands of numbers, not two, but the idea is the same: close together means similar meaning.</p>
+
+  <h2 id="chunking">Chunking: cutting documents into pieces</h2>
+  <p>You do not search whole documents. You cut them into <strong>chunks</strong>, short passages, and give each one an embedding.</p>
+  <ul>
+    <li><strong>Too big:</strong> a chunk covers many topics, so the match is vague.</li>
+    <li><strong>Too small:</strong> a chunk loses its context, such as a price with no product name.</li>
+    <li><strong>Good starting point:</strong> a few sentences or one short section, often with a small overlap between neighbours.</li>
+  </ul>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: index cards</span>
+    Instead of handing someone a whole textbook, you write each idea on its own index card. Finding the right card is quick. But a card that just says &ldquo;KES 450&rdquo; is useless.
+  </div>
+
+  <h2 id="phases">The two phases</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 300" role="img" aria-label="Phase 1 ingestion: documents are cut into chunks, turned into embeddings and stored in a vector database. Phase 2 answering: the question is turned into an embedding, the closest chunks are found, and the model answers from them.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <text x="10" y="20" class="dg-h">PHASE 1: INGESTION (done once, ahead of time)</text>
+      <rect x="10" y="32" width="120" height="60" rx="10" class="dg-soft"/><text x="70" y="58" text-anchor="middle" class="dg-t">Documents</text><text x="70" y="76" text-anchor="middle" class="dg-s">PDFs, sheets</text>
+      <rect x="165" y="32" width="120" height="60" rx="10" class="dg-box"/><text x="225" y="58" text-anchor="middle" class="dg-t">Chunks</text><text x="225" y="76" text-anchor="middle" class="dg-s">short passages</text>
+      <rect x="320" y="32" width="140" height="60" rx="10" class="dg-box"/><text x="390" y="58" text-anchor="middle" class="dg-t">Embeddings</text><text x="390" y="76" text-anchor="middle" class="dg-s">meaning as numbers</text>
+      <rect x="495" y="32" width="145" height="60" rx="10" class="dg-hot"/><text x="567" y="58" text-anchor="middle" class="dg-t">Vector store</text><text x="567" y="76" text-anchor="middle" class="dg-s">the filing cabinet</text>
+      <path d="M130 62H162" class="dg-l" marker-end="url(#ah)"/><path d="M285 62H317" class="dg-l" marker-end="url(#ah)"/><path d="M460 62H492" class="dg-l" marker-end="url(#ah)"/>
+      <text x="10" y="160" class="dg-h">PHASE 2: ANSWERING (every question)</text>
+      <rect x="10" y="172" width="110" height="60" rx="10" class="dg-soft"/><text x="65" y="198" text-anchor="middle" class="dg-t">Question</text><text x="65" y="216" text-anchor="middle" class="dg-s">from the user</text>
+      <rect x="150" y="172" width="110" height="60" rx="10" class="dg-box"/><text x="205" y="198" text-anchor="middle" class="dg-t">Embed it</text><text x="205" y="216" text-anchor="middle" class="dg-s">same method</text>
+      <rect x="290" y="172" width="120" height="60" rx="10" class="dg-hot"/><text x="350" y="198" text-anchor="middle" class="dg-t">Find nearest</text><text x="350" y="216" text-anchor="middle" class="dg-s">top few chunks</text>
+      <rect x="440" y="172" width="200" height="60" rx="10" class="dg-box"/><text x="540" y="198" text-anchor="middle" class="dg-t">Model answers</text><text x="540" y="216" text-anchor="middle" class="dg-s">using only those chunks</text>
+      <path d="M120 202H147" class="dg-l" marker-end="url(#ah)"/><path d="M260 202H287" class="dg-l" marker-end="url(#ah)"/><path d="M410 202H437" class="dg-l" marker-end="url(#ah)"/>
+      <path d="M567 96V132H350V168" class="dg-la" marker-end="url(#ah)"/>
+      <text x="460" y="127" text-anchor="middle" class="dg-s">searched in the vector store</text>
+      <text x="325" y="272" text-anchor="middle" class="dg-s">The same embedding method must be used in both phases.</text>
+    </svg>
+    <figcaption>Ingestion fills the filing cabinet. Answering looks things up in it.</figcaption>
+  </figure>
+  <div class="callout warn">
+    <span class="label">One rule that catches everyone</span>
+    The question and the documents must be embedded with the <strong>same model</strong>. Mix them and the map no longer lines up, so the search returns nonsense.
+  </div>
+
+  <h2 id="agentic">Standard RAG and agentic RAG</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th></th><th>Standard RAG</th><th>Agentic RAG</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Who decides to search?</strong></td><td>The system. It always searches once, then answers.</td><td>The agent. It chooses whether to search, what to search for, and whether to search again.</td></tr>
+      <tr><td><strong>Number of searches</strong></td><td>Exactly one</td><td>Zero, one or several</td></tr>
+      <tr><td><strong>Good for</strong></td><td>Simple, predictable questions</td><td>Vague or multi-part questions, small talk, comparing two items</td></tr>
+      <tr><td><strong>Cost and speed</strong></td><td>Faster and cheaper</td><td>Slower and costlier, more flexible</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: two librarians</span>
+    The first librarian always walks to one shelf and brings back whatever is there. The second thinks first: &ldquo;Do I need a book? Which shelf? Is this enough, or should I check another?&rdquo; That second librarian is agentic RAG. In n8n, the search is simply a <strong>tool</strong> you give the agent, as in Lesson 4.
+  </div>
+  <p>Example: a customer asks, &ldquo;Compare the Basic and Pro blender, and tell me which is quieter.&rdquo; An agentic system searches for Basic, then searches for Pro, then compares. A one-shot system may only retrieve one of them.</p>
+
+  <h2 id="grounding">Making the AI stay honest</h2>
+  <div class="prompt"><span class="label">Grounding rules for the prompt</span>Answer only using the information returned by the search tool.
+If the search results do not contain the answer, say "I don't have that information" and offer to take a message.
+Never use outside knowledge for prices, specifications or policies.
+When you give a price or a specification, say which product it belongs to.</div>
+  <p>Without such rules the model happily fills gaps from its own memory, which is exactly what you were trying to stop.</p>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>On paper or in a document, plan a RAG system for a small business before building anything. Lesson 14 builds the real thing.</p>
+  <table class="fill-table">
+    <thead><tr><th>Decision</th><th>Your answer</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">What documents will it answer from?</th><td><input name="docs" aria-label="Documents"></td></tr>
+      <tr><th scope="row">How will I cut them into chunks?</th><td><input name="chunks" aria-label="Chunking plan"></td></tr>
+      <tr><th scope="row">Three questions it should answer well</th><td><input name="good" aria-label="Good questions"></td></tr>
+      <tr><th scope="row">Three questions it should refuse</th><td><input name="refuse" aria-label="Refused questions"></td></tr>
+      <tr><th scope="row">One question that needs agentic RAG, and why</th><td><input name="agentic" aria-label="Agentic question"></td></tr>
+    </tbody>
+  </table>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="embed"> I can explain an embedding using the map comparison</label>
+    <label class="check"><input type="checkbox" data-check="phases"> I can name the two phases and what happens in each</label>
+    <label class="check"><input type="checkbox" data-check="agentic"> I can explain standard versus agentic RAG in one sentence</label>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>The answer is wrong but sounds confident</td><td>Retrieval returned the wrong chunks, or the model ignored them. Check what was retrieved first.</td></tr>
+      <tr><td>It answers things not in your documents</td><td>The grounding rules are missing or too weak.</td></tr>
+      <tr><td>Prices are attached to the wrong product</td><td>Chunks lost context. Put the product name inside every chunk.</td></tr>
+      <tr><td>The search returns irrelevant text</td><td>Different embedding models were used, or the chunks are too big or too small.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What does RAG add to a language model?</p>
+      <div class="opts">
+        <button type="button" class="opt">It makes the model bigger</button>
+        <button type="button" class="opt" data-correct>It looks up relevant text from your documents before answering</button>
+        <button type="button" class="opt">It makes the model speak faster</button>
+      </div>
+      <p class="why">Retrieval-Augmented Generation means retrieve first, then generate the answer.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. What is an embedding?</p>
+      <div class="opts">
+        <button type="button" class="opt">A picture attached to a document</button>
+        <button type="button" class="opt">A password for the database</button>
+        <button type="button" class="opt" data-correct>A list of numbers that represents the meaning of a piece of text</button>
+      </div>
+      <p class="why">Similar meanings give similar numbers.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. Why do we cut documents into chunks?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>So the search can find short, specific passages</button>
+        <button type="button" class="opt">To make files smaller to email</button>
+        <button type="button" class="opt">Because models cannot read documents at all</button>
+      </div>
+      <p class="why">Chunks are like index cards: quick to find and focused on one idea.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. What must stay the same between ingestion and answering?</p>
+      <div class="opts">
+        <button type="button" class="opt">The colour of the interface</button>
+        <button type="button" class="opt" data-correct>The embedding model</button>
+        <button type="button" class="opt">The time of day</button>
+      </div>
+      <p class="why">A different embedding model means a different map, so the search no longer works.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. What makes RAG agentic?</p>
+      <div class="opts">
+        <button type="button" class="opt">It always searches exactly once</button>
+        <button type="button" class="opt">It never uses tools</button>
+        <button type="button" class="opt" data-correct>The agent decides whether, what and how many times to search</button>
+      </div>
+      <p class="why">In agentic RAG the search is a tool the agent chooses to use.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>RAG</dt><dd>Retrieval-Augmented Generation. Look up relevant text first, then answer from it.</dd>
+    <dt>Embedding</dt><dd>A list of numbers that stands for the meaning of a piece of text.</dd>
+    <dt>Chunk</dt><dd>A short passage cut from a larger document, searched and retrieved on its own.</dd>
+    <dt>Similarity search</dt><dd>Finding the stored chunks whose embeddings are closest to the question's.</dd>
+    <dt>Vector store</dt><dd>A database that holds embeddings and can search them by closeness.</dd>
+    <dt>Ingestion</dt><dd>The one-off preparation phase: cut documents into chunks, embed them, store them.</dd>
+    <dt>Agentic RAG</dt><dd>RAG where the agent chooses when and how often to search.</dd>
+    <dt>Grounding</dt><dd>Making the AI answer only from the retrieved information.</dd>
+    <dt>Hallucination</dt><dd>A confident answer that is made up.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>RAG lets the AI answer from your documents: look up the right chunks first, then answer using only them.</li>
+    <li>Embeddings turn meaning into numbers. Similarity search finds the nearest chunks. Use the same embedding model in both phases.</li>
+    <li>Ingestion happens ahead of time. Answering happens on every question. Agentic RAG lets the agent decide when to search.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 14, Supabase vectors and data ingest: build the real filing cabinet and load your product data into it.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-12.html">&larr; Lesson 12</a>
+    <button type="button" class="secondary mid-btn" data-done="13">Mark this lesson as done</button>
+    <a class="btn" href="lesson-14.html">Lesson 14 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

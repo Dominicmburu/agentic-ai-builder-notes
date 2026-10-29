@@ -175,3 +175,60 @@ dl.glossary dd { margin: .2rem 0 0; }
   .site-header nav a { margin-left: .7rem; font-size: .88rem; }
   .brand { font-size: .95rem; }
 }
+
+/* ---------- lessons 2-20 additions ---------- */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .6rem; margin-top: .6rem; }
+.stat { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: .6rem .8rem; }
+.stat .n { display: block; font-size: 1.3rem; font-weight: 700; color: var(--brand-dark); }
+.stat .l { font-size: .8rem; color: var(--muted); }
+.demo input[type="range"] { width: 100%; accent-color: var(--brand); }
+.demo input[type="number"], .demo input[type="text"], .demo select { font: inherit; padding: .35rem .5rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+.demo input.wide { width: 100%; max-width: 100%; }
+.demo .draws { font-weight: 600; color: var(--brand-dark); }
+.loop-steps { list-style: none; padding: 0; margin: .8rem 0; }
+.loop-steps li { padding: .6rem .8rem; border: 1px solid var(--border); border-radius: 10px; margin: .4rem 0; background: var(--bg); }
+.loop-steps li.now { border-color: var(--brand); background: var(--surface); }
+.who { display: inline-block; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: .1rem .55rem; border-radius: 999px; margin-right: .4rem; color: #fff; }
+.who-you { background: #5b6b73; } .who-model { background: var(--brand); } .who-app { background: var(--accent); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.check { display: block; padding: .45rem .2rem; cursor: pointer; }
+.check input { width: 1.1rem; height: 1.1rem; margin-right: .5rem; accent-color: var(--brand); vertical-align: -2px; }
+.checklist { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: .6rem 1rem; margin: 1rem 0; }
+.mapwrap { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 1rem; align-items: start; margin: .8rem 0; }
+@media (max-width: 640px) { .mapwrap { grid-template-columns: 1fr; } }
+svg.map { width: 100%; max-width: 300px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; }
+svg.map .doc { fill: var(--surface); stroke: var(--brand); stroke-width: 1.5; }
+svg.map .doc.best { fill: var(--brand); }
+svg.map .q { fill: var(--accent); stroke: var(--accent); }
+svg.map text { font: 700 11px sans-serif; fill: var(--text); pointer-events: none; }
+svg.map .ql { fill: #fff; }
+.legend { margin: 0; padding-left: 1.3rem; font-size: .92rem; }
+.cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+.cols2 .card h3 { margin-top: 0; }
+.kwhit { font-weight: 700; color: var(--accent); }
+.pill.project { background: var(--accent); color: #fff; }
+.pill.integration { background: var(--gold); color: #fff; }
+@media (prefers-color-scheme: dark) { .pill.project, .pill.integration { color: #0f1b20; } }
+.card.project { border-color: var(--accent); }
+.card.is-done { background: var(--bg); border-color: var(--good); }
+.card.is-done h3::after { content: " \2713"; color: var(--good); }
+#progress { color: var(--muted); font-weight: 600; }
+.week-intro { color: var(--muted); }
+.pager { align-items: center; }
+.pager .mid { flex: 1; text-align: center; }
+.sources { font-size: .9rem; color: var(--muted); }
+/* diagrams */
+figure.diagram { margin: 1.4rem 0; }
+figure.diagram svg { width: 100%; height: auto; display: block; }
+figure.diagram figcaption { font-size: .9rem; color: var(--muted); margin-top: .4rem; }
+.dg-box { fill: var(--surface); stroke: var(--brand); stroke-width: 1.5; }
+.dg-hot { fill: var(--surface); stroke: var(--accent); stroke-width: 2; }
+.dg-soft { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.5; }
+.dg-t { fill: var(--text); font: 600 14px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+.dg-s { fill: var(--muted); font: 400 12px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+.dg-h { fill: var(--brand-dark); font: 700 13px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; letter-spacing: .04em; }
+.dg-l { stroke: var(--muted); stroke-width: 2; fill: none; }
+.dg-la { stroke: var(--accent); stroke-width: 2; fill: none; }
+.dg-ah { fill: var(--muted); } .dg-aa { fill: var(--accent); }
+.prompt { background: var(--surface-2); border: 1px solid var(--border); border-left: 4px solid var(--brand); border-radius: 10px; padding: .8rem 1rem; margin: 1rem 0; white-space: pre-wrap; font-size: .95rem; }
+.prompt .label { display: block; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); margin-bottom: .3rem; }

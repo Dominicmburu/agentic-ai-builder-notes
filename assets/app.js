@@ -136,7 +136,7 @@
   // ---- Exercise table: remember what you type (in this browser only) ----
   var fields = document.querySelectorAll(".fill-table input");
   fields.forEach(function (inp) {
-    var key = "lesson1-" + inp.name;
+    var key = "fill:" + location.pathname.split("/").pop() + ":" + inp.name;
     try { var v = localStorage.getItem(key); if (v) inp.value = v; } catch (e) {}
     inp.addEventListener("input", function () {
       try { localStorage.setItem(key, inp.value); } catch (e) {}

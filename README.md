@@ -1,16 +1,23 @@
 # Agentic AI Builder: Course Notes
 
-A small static website of plain-language notes for the 4-week Agentic AI Builder course. No build step and no installs: it is just HTML, CSS and a little JavaScript.
+A small static website of plain-language notes for the 4-week Agentic AI Builder course: 20 lessons, with a project at the end of each week (lessons 5, 10, 15 and 20). No build step and no installs. It is just HTML, CSS and a little JavaScript.
 
 ## What is inside
 
 ```
-index.html                  Home page with the lesson list
-lessons/lesson-1.html       Lesson 1 notes
+index.html                  Home page: four weeks of lesson cards and a progress counter
+glossary.html               Every term from every lesson, A to Z
+lessons/lesson-1.html ...   Lessons 1 to 20
 assets/style.css            All the styling (light and dark mode)
-assets/app.js               Copy buttons, quiz, JSON checker, next-word demo
-downloads/                  Slide decks students can download
+assets/app.js               Copy buttons, quiz, JSON checker, saved exercise tables
+assets/widgets.js           Interactive demos, checklists, "mark as done" and progress
+downloads/                  Slide decks students can download (Lesson 1 so far)
+.nojekyll                   Tells GitHub Pages to serve the files as they are
 ```
+
+Every lesson has the same shape: the big idea, plain explanations with everyday comparisons, a worked example, an exercise, an "if something goes wrong" table, a five-question quiz, a glossary and a recap.
+
+Students' progress (ticked checklists, filled-in tables, finished lessons) is saved in their own browser only. Nothing is sent anywhere.
 
 ## Preview on your computer
 
@@ -32,12 +39,15 @@ Then visit http://localhost:8000
 
 Note: GitHub Pages on a free account needs the repository to be public.
 
-## Add the next lesson
+## Editing a lesson
 
-1. Copy `lessons/lesson-1.html` to `lessons/lesson-2.html`.
-2. Change the title, the "On this page" list, and the content. Keep the section `id` values matching the links in the list.
-3. In `index.html`, replace the "Coming soon" card for that lesson with a link card like the Lesson 1 card.
-4. Put the lesson's slide deck in `downloads/`.
+Each lesson is a normal HTML file in `lessons/`. Open it in any text editor and change the words between the tags. Keep these in step if you change them:
+
+- Section headings have an `id` (for example `<h2 id="exercise">`). The "On this page" list links to those ids.
+- The quiz answers are marked with `data-correct`. Keep exactly one per question.
+- Checklist boxes have a `data-check` name, and exercise table inputs have a `name`. Students' saved answers are stored under these names, so renaming them clears what was saved.
+
+To add a slide deck, put the file in `downloads/` and link it from the lesson.
 
 ## Writing style guide for the notes
 
@@ -45,6 +55,10 @@ Note: GitHub Pages on a free account needs the repository to be public.
 - Short sentences. One idea per paragraph.
 - Explain a new word the first time it appears, and add it to the glossary.
 - End each lesson with an exercise and a short quiz.
+
+## Before you teach each lesson
+
+The steps that use outside services (n8n, ElevenLabs, Supabase, Ollama, MCP servers, Firecrawl, Hunter.io) were written from general knowledge of these tools. Their menus, node names and settings change often. Do a dry run of each lesson yourself first, and fix any button or node name that has moved.
 
 ## Safety
 

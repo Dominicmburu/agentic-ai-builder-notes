@@ -11,7 +11,7 @@
 <header class="site-header">
   <div class="inner">
     <a class="brand" href="../index.html">Agentic AI Builder</a>
-    <nav><a href="../index.html">All lessons</a><a href="#quiz">Quiz</a><a href="#glossary">Glossary</a></nav>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
   </div>
 </header>
 
@@ -43,7 +43,7 @@
 
 <main class="lesson">
 <article>
-  <p class="eyebrow">Week 1 · Lesson 1</p>
+  <p class="eyebrow">Week 1 · Lesson 1 · Core</p>
   <h1>Meet the AI that reads and writes</h1>
   <p class="lead">An introduction to LLMs and APIs, with no technical background needed.</p>
   <div class="meta">
@@ -248,7 +248,21 @@
     <summary>For the curious: send this request yourself (optional)</summary>
     <p>You will need a free account at <a href="https://openrouter.ai" target="_blank" rel="noopener">openrouter.ai</a> and an API key. OpenRouter is like a market stall with many different AIs, all reachable with one account and one key. Copy a model name from its models page and replace <code>MODEL_ID</code>.</p>
     <p><strong>Option 1, no code:</strong> use the chat page on the OpenRouter website. Pick a model, type your question, and read the answer. This is perfectly fine for the exercise below.</p>
-    <p><strong>Option 2, a terminal command</strong> (replace the key and model first):</p>
+    <p><strong>Option 2, a terminal command.</strong> Pick the one for your computer, and replace <code>YOUR_KEY_HERE</code> and <code>MODEL_ID</code> first. Each computer types these differently, so a command copied from the wrong box will fail.</p>
+    <p><strong>Windows, PowerShell</strong> (the blue window). Paste all of it, then press Enter:</p>
+    <div class="codebox"><pre><code>$body = @{
+  model = "MODEL_ID"
+  messages = @(@{ role = "user"; content = "Explain what an API is to a 12-year-old in three sentences." })
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod -Uri "https://openrouter.ai/api/v1/chat/completions" `
+  -Method Post `
+  -Headers @{ Authorization = "Bearer YOUR_KEY_HERE" } `
+  -ContentType "application/json" `
+  -Body $body | ConvertTo-Json -Depth 10</code></pre></div>
+    <p><strong>Windows, Command Prompt (cmd)</strong>. This must be <em>one single line</em>:</p>
+    <div class="codebox"><pre><code>curl.exe https://openrouter.ai/api/v1/chat/completions -H "Authorization: Bearer YOUR_KEY_HERE" -H "Content-Type: application/json" -d "{\"model\": \"MODEL_ID\", \"messages\": [{\"role\": \"user\", \"content\": \"Explain what an API is to a 12-year-old in three sentences.\"}]}"</code></pre></div>
+    <p><strong>Mac or Linux, Terminal</strong>:</p>
     <div class="codebox"><pre><code>curl https://openrouter.ai/api/v1/chat/completions \
   -H "Authorization: Bearer YOUR_KEY_HERE" \
   -H "Content-Type: application/json" \
@@ -258,7 +272,17 @@
       {"role": "user", "content": "Explain what an API is to a 12-year-old in three sentences."}
     ]
   }'</code></pre></div>
-    <p><strong>Option 3, a short Python script</strong> that asks two models the same question and times them. Save your key in an environment variable called <code>OPENROUTER_API_KEY</code> instead of typing it into the file.</p>
+    <p>Why three versions? The reply is the same JSON in all of them. Only the typing rules differ: PowerShell and cmd treat quote marks and line breaks differently from Mac and Linux. If a command gives a strange error, you almost always pasted the wrong version for your window.</p>
+    <p><strong>Option 3, a short Python script</strong> that asks two models the same question and times them. First install the helper once with <code>pip install requests</code>. Save your key in an environment variable called <code>OPENROUTER_API_KEY</code> instead of typing it into the file. Set it in the same window you will run the script from:</p>
+    <div class="codebox"><pre><code># Windows PowerShell
+$env:OPENROUTER_API_KEY = "YOUR_KEY_HERE"
+
+# Windows Command Prompt (cmd)
+set OPENROUTER_API_KEY=YOUR_KEY_HERE
+
+# Mac or Linux
+export OPENROUTER_API_KEY="YOUR_KEY_HERE"</code></pre></div>
+    <p>These last only until you close the window. Then save the script below as <code>ask.py</code> and run it with <code>python ask.py</code> (on Windows, <code>py ask.py</code> also works).</p>
     <div class="codebox"><pre><code>import os
 import time
 import requests
@@ -411,7 +435,8 @@ for model in MODELS:
 
   <div class="pager">
     <a class="btn secondary" href="../index.html">All lessons</a>
-    <span class="pill soon">Lesson 2 coming soon</span>
+    <button type="button" class="secondary mid-btn" data-done="1">Mark this lesson as done</button>
+    <a class="btn" href="lesson-2.html">Lesson 2 &rarr;</a>
   </div>
 </article>
 </main>
@@ -421,5 +446,6 @@ for model in MODELS:
 
 <div class="footer">Agentic AI Builder notes · Week 1 · Lesson 1</div>
 <script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
 </body>
 </html>

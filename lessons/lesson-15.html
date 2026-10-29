@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 15: Project: the Product Expert voice agent | Agentic AI Builder</title>
+  <meta name="description" content="Put Week 3 together: a voice agent that answers questions from your product data and declines the rest.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#parts">What you are combining</a></li>
+    <li><a href="#start">Your starting files</a></li>
+    <li><a href="#plan">Build it in order</a></li>
+    <li><a href="#test">The test</a></li>
+    <li><a href="#fixing">When a question fails: find the layer</a></li>
+    <li><a href="#deliver">What to hand in</a></li>
+    <li><a href="#rubric">How it will be judged</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 3 · Lesson 15 · Project</p>
+  <h1>Project: the Product Expert voice agent</h1>
+  <p class="lead">Put Week 3 together: a voice agent that answers questions from your product data and declines the rest.</p>
+  <div class="meta">
+    <span class="pill">About 90 minutes to read</span>
+    <span class="pill project">Project</span>
+    <a class="pill" href="../downloads/Lesson15_Project_Product_Expert_Voice_Agent.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">You will build a voice agent that knows your products. Ask it about a price and it answers correctly. Ask it about something outside the catalogue and it politely says no. Then you prove it works with a test.</div>
+  <p><strong>The goal:</strong> at least <strong>85% of in-scope questions answered correctly</strong>, and <strong>all 3 out-of-scope questions declined</strong>.</p>
+
+  <h2 id="parts">What you are combining</h2>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 170" role="img" aria-label="Product Expert system: the caller talks to the ElevenLabs agent, which calls an n8n webhook, where an agent searches the Supabase product data and returns the answer.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <rect x="6" y="50" width="104" height="64" rx="10" class="dg-soft"/><text x="58" y="77" text-anchor="middle" class="dg-t">Caller</text><text x="58" y="97" text-anchor="middle" class="dg-s">voice</text>
+      <rect x="134" y="50" width="130" height="64" rx="10" class="dg-hot"/><text x="199" y="77" text-anchor="middle" class="dg-t">Voice agent</text><text x="199" y="97" text-anchor="middle" class="dg-s">ElevenLabs</text>
+      <rect x="288" y="50" width="116" height="64" rx="10" class="dg-box"/><text x="346" y="77" text-anchor="middle" class="dg-t">Webhook</text><text x="346" y="97" text-anchor="middle" class="dg-s">n8n + agent</text>
+      <rect x="428" y="50" width="118" height="64" rx="10" class="dg-box"/><text x="487" y="77" text-anchor="middle" class="dg-t">Search tool</text><text x="487" y="97" text-anchor="middle" class="dg-s">vector store</text>
+      <rect x="566" y="50" width="78" height="64" rx="10" class="dg-box"/><text x="605" y="77" text-anchor="middle" class="dg-t">Data</text><text x="605" y="97" text-anchor="middle" class="dg-s">Supabase</text>
+      <path d="M110 82H131" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M264 82H285" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M404 82H425" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/><path d="M546 82H563" class="dg-l" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="325" y="150" text-anchor="middle" class="dg-s">Lessons 11 and 12 (voice, webhook), Lessons 13 and 14 (search, data)</text>
+    </svg>
+    <figcaption>Pattern B from Lesson 12, with agentic RAG behind the webhook.</figcaption>
+  </figure>
+
+  <h2 id="start">Your starting files</h2>
+  <ul>
+    <li><strong>Products.xlsx</strong>: the product list to load into Supabase.</li>
+    <li><strong>voice.html</strong>: a ready-made web page that hosts the voice agent so you can talk to it in a browser.</li>
+  </ul>
+  <p>Use the files your teacher shares. If you do not have them yet, ask before you start.</p>
+
+  <h2 id="plan">Build it in order</h2>
+  <ol class="steps">
+    <li><strong>Load the data (Lesson 14).</strong> Create the table, load every product once with metadata, and run the 10-product retrieval test. Do not move on until at least eight of ten pass.</li>
+    <li><strong>Build the answering workflow.</strong> A Webhook node, an AI Agent with a chat model, and the vector store as a tool. Return the answer with Respond to Webhook.</li>
+    <li><strong>Write the grounding prompt.</strong> Answer only from the search results. Say &ldquo;I don't have that information&rdquo; when it is not there. Decline anything outside your products.</li>
+    <li><strong>Create the voice agent (Lesson 11).</strong> Short answers, one question at a time, a clear first message.</li>
+    <li><strong>Connect them (Lesson 12).</strong> Add a webhook tool that sends the caller's question to your production URL. Add a secret header.</li>
+    <li><strong>Open voice.html</strong> and talk to your agent.</li>
+    <li><strong>Test, fix, and test again</strong> using the table below.</li>
+  </ol>
+  <div class="prompt"><span class="label">Starter prompt for the n8n agent</span>You are a product expert for our store.
+Use the search tool to find product information. Search before every answer about a product.
+Answer only with facts returned by the search tool. Always mention the product name with any price or specification.
+If the tool does not return the answer, say "I don't have that information."
+If the question is not about our products, say you can only help with our products.
+For questions comparing two products, search for each one separately.
+Keep every answer to two short sentences.</div>
+
+  <h2 id="test">The test</h2>
+  <p>Write <strong>20 questions</strong> before you start fixing anything: 17 about your products and 3 that are out of scope (for example, &ldquo;What is the weather like?&rdquo;, &ldquo;Tell me a joke&rdquo;, &ldquo;Which phone should I buy?&rdquo; if you sell kitchen items). Mix easy and tricky: price, features, comparisons, a product that does not exist, a misspelled name.</p>
+  <p>For each question, write the correct answer from your file first. Then ask the agent and mark it.</p>
+  <div class="table-scroll">
+  <table class="fill-table">
+    <thead><tr><th>#</th><th>Type</th><th>Question</th><th>Correct answer</th><th>Agent said</th><th>Pass?</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>In scope</td><td><input name="t1q" aria-label="Q1"></td><td><input name="t1c" aria-label="Correct 1"></td><td><input name="t1a" aria-label="Agent 1"></td><td><input name="t1p" aria-label="Pass 1"></td></tr>
+      <tr><td>2</td><td>In scope</td><td><input name="t2q" aria-label="Q2"></td><td><input name="t2c" aria-label="Correct 2"></td><td><input name="t2a" aria-label="Agent 2"></td><td><input name="t2p" aria-label="Pass 2"></td></tr>
+      <tr><td>3</td><td>In scope</td><td><input name="t3q" aria-label="Q3"></td><td><input name="t3c" aria-label="Correct 3"></td><td><input name="t3a" aria-label="Agent 3"></td><td><input name="t3p" aria-label="Pass 3"></td></tr>
+      <tr><td>4</td><td>In scope</td><td><input name="t4q" aria-label="Q4"></td><td><input name="t4c" aria-label="Correct 4"></td><td><input name="t4a" aria-label="Agent 4"></td><td><input name="t4p" aria-label="Pass 4"></td></tr>
+      <tr><td>5</td><td>In scope</td><td><input name="t5q" aria-label="Q5"></td><td><input name="t5c" aria-label="Correct 5"></td><td><input name="t5a" aria-label="Agent 5"></td><td><input name="t5p" aria-label="Pass 5"></td></tr>
+      <tr><td>6</td><td>In scope</td><td><input name="t6q" aria-label="Q6"></td><td><input name="t6c" aria-label="Correct 6"></td><td><input name="t6a" aria-label="Agent 6"></td><td><input name="t6p" aria-label="Pass 6"></td></tr>
+      <tr><td>7</td><td>In scope</td><td><input name="t7q" aria-label="Q7"></td><td><input name="t7c" aria-label="Correct 7"></td><td><input name="t7a" aria-label="Agent 7"></td><td><input name="t7p" aria-label="Pass 7"></td></tr>
+      <tr><td>8</td><td>Out of scope</td><td><input name="t8q" aria-label="Q8"></td><td>Politely declines</td><td><input name="t8a" aria-label="Agent 8"></td><td><input name="t8p" aria-label="Pass 8"></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The table above shows the first rows. Copy the pattern in your own notebook or sheet for all 20 questions.</p>
+  <div class="callout">
+    <span class="label">How to score</span>
+    In-scope questions: <strong>17</strong>, so you need at least <strong>15 correct</strong> (15 &divide; 17 is 88%, while 14 is 82%, which falls short). Out-of-scope questions: <strong>3 of 3</strong> must be declined. A &ldquo;correct&rdquo; answer has the right fact for the right product. A confident wrong price is a fail, even if it sounds good.
+  </div>
+
+  <h2 id="fixing">When a question fails: find the layer</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Symptom</th><th>Layer</th><th>Try this</th></tr></thead>
+    <tbody>
+      <tr><td>Search returned the wrong product</td><td>Data and chunks</td><td>Put name, category and key words in each chunk. Re-load once.</td></tr>
+      <tr><td>Right product retrieved, wrong answer given</td><td>n8n agent prompt</td><td>Tighten the grounding rules. Ask it to quote the retrieved text.</td></tr>
+      <tr><td>Answers things it should decline</td><td>Both prompts</td><td>Add explicit refusal rules and examples of what is out of scope.</td></tr>
+      <tr><td>Slow or rambling</td><td>Voice agent</td><td>Shorter prompt, two-sentence limit, faster model.</td></tr>
+      <tr><td>The tool is never called</td><td>Voice agent tool</td><td>Improve the tool description and say when to use it.</td></tr>
+      <tr><td>Works in n8n, fails from the voice agent</td><td>Webhook</td><td>Production URL, workflow active, header matches.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="deliver">What to hand in</h2>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="data"> Product data loaded once into Supabase, with metadata</label>
+    <label class="check"><input type="checkbox" data-check="retrieval"> The 10-product retrieval test, with results</label>
+    <label class="check"><input type="checkbox" data-check="workflow"> The n8n workflow, exported as a file, with no keys inside</label>
+    <label class="check"><input type="checkbox" data-check="voice"> The voice agent's prompt and first message</label>
+    <label class="check"><input type="checkbox" data-check="questions"> The 20-question test with results and the score</label>
+    <label class="check"><input type="checkbox" data-check="score"> At least 85% of in-scope questions correct, and all 3 out-of-scope declined</label>
+    <label class="check"><input type="checkbox" data-check="demo"> A short demo: I talked to the agent in voice.html</label>
+    <label class="check"><input type="checkbox" data-check="notes"> One paragraph: what failed first and how I fixed it</label>
+  </div>
+  <div class="callout warn">
+    <span class="label">Before you share anything</span>
+    Open your exported workflow and search it for any key, password or secret header. Remove them. Credentials should live in n8n only.
+  </div>
+
+  <h2 id="rubric">How it will be judged</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Area</th><th>Strong work looks like</th></tr></thead>
+    <tbody>
+      <tr><td>Correctness</td><td>At least 85% of in-scope answers right, with the right product attached to each fact</td></tr>
+      <tr><td>Staying in scope</td><td>All out-of-scope questions politely declined, with no invented answers</td></tr>
+      <tr><td>Voice quality</td><td>Short, natural replies and a reasonable pause before answering</td></tr>
+      <tr><td>Testing</td><td>20 written questions, honest results, and fixes tied to the failing layer</td></tr>
+      <tr><td>Safety</td><td>No secrets in files, a secured webhook</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What are the two pass conditions for the project?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>At least 85% of in-scope questions correct and all 3 out-of-scope questions declined</button>
+        <button type="button" class="opt">Any answer that sounds good</button>
+        <button type="button" class="opt">The agent speaks in a nice voice</button>
+      </div>
+      <p class="why">Correctness and staying in scope are both required.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. A question fails because the wrong product was retrieved. Which layer do you fix first?</p>
+      <div class="opts">
+        <button type="button" class="opt">The voice</button>
+        <button type="button" class="opt" data-correct>The data and chunks</button>
+        <button type="button" class="opt">The microphone</button>
+      </div>
+      <p class="why">If retrieval is wrong, no prompt can rescue the answer.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. A confident answer gives the wrong price. How is it marked?</p>
+      <div class="opts">
+        <button type="button" class="opt">As a pass because it sounded confident</button>
+        <button type="button" class="opt">As half a point</button>
+        <button type="button" class="opt" data-correct>As a fail</button>
+      </div>
+      <p class="why">A confident wrong answer is the worst kind of error.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. The tool works in n8n but never fires from the voice agent. What do you check?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>That it uses the production URL and the workflow is active</button>
+        <button type="button" class="opt">The speaker volume</button>
+        <button type="button" class="opt">The number of chunks</button>
+      </div>
+      <p class="why">Test URLs only work while n8n is listening.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. What must you remove from a workflow before sharing it?</p>
+      <div class="opts">
+        <button type="button" class="opt">The node names</button>
+        <button type="button" class="opt" data-correct>Any keys, passwords or secret headers</button>
+        <button type="button" class="opt">The sticky notes</button>
+      </div>
+      <p class="why">Secrets belong in credentials, not in files you hand in.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>In scope</dt><dd>A question the agent should be able to answer from its data.</dd>
+    <dt>Out of scope</dt><dd>A question the agent should politely decline.</dd>
+    <dt>Test set</dt><dd>A fixed list of questions with known right answers, used to measure quality.</dd>
+    <dt>Grounding prompt</dt><dd>Instructions telling the agent to answer only from retrieved information.</dd>
+    <dt>Regression</dt><dd>A fix that breaks something that used to work. Re-run the whole test after every change.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>The Product Expert combines Week 3: a voice agent calls a webhook, an n8n agent searches Supabase, and the answer comes back.</li>
+    <li>Write the 20-question test first. Target at least 85% in scope and 3 of 3 declined out of scope.</li>
+    <li>When something fails, find the layer: data, n8n prompt, voice agent or webhook. Fix one thing, then re-run the whole test.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 16, self-hosted n8n and local models: run your own n8n and a model on your own computer.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-14.html">&larr; Lesson 14</a>
+    <button type="button" class="secondary mid-btn" data-done="15">Mark this lesson as done</button>
+    <a class="btn" href="lesson-16.html">Lesson 16 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>

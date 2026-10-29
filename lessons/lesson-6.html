@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 6: Your first n8n AI agent | Agentic AI Builder</title>
+  <meta name="description" content="Meet n8n, build a chat agent with no code, and run it live.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="../index.html">Agentic AI Builder</a>
+    <nav><a href="../index.html">All lessons</a><a href="../glossary.html">Glossary</a></nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+
+<aside class="toc" aria-label="On this page">
+  <h2>On this page</h2>
+  <ol>
+    <li><a href="#big-idea">The big idea</a></li>
+    <li><a href="#vocab">The five words you need</a></li>
+    <li><a href="#setup">Getting set up</a></li>
+    <li><a href="#build">Build the agent</a></li>
+    <li><a href="#test">Test it</a></li>
+    <li><a href="#active">Manual runs and live runs</a></li>
+    <li><a href="#costs">What does it cost?</a></li>
+    <li><a href="#exercise">Your exercise</a></li>
+    <li><a href="#problems">If something goes wrong</a></li>
+    <li><a href="#quiz">Quick quiz</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#recap">Recap and next</a></li>
+  </ol>
+</aside>
+
+<main class="lesson">
+<article>
+  <p class="eyebrow">Week 2 · Lesson 6 · Core</p>
+  <h1>Your first n8n AI agent</h1>
+  <p class="lead">Meet n8n, build a chat agent with no code, and run it live.</p>
+  <div class="meta">
+    <span class="pill">About 40 minutes to read</span>
+    <span class="pill core">Core</span>
+    <a class="pill" href="../downloads/Lesson6_First_n8n_AI_Agent.pptx">Download the slides</a>
+  </div>
+
+
+  <h2 id="big-idea">The big idea</h2>
+  <div class="callout big">n8n lets you build automations by connecting boxes on a canvas instead of writing code. Each box does one job. This week you turn what you learned about AI into working workflows.</div>
+  <p><strong>By the end you can:</strong></p>
+  <ul>
+    <li>Find your way around n8n cloud and name its parts: node, connection, workflow, execution and template.</li>
+    <li>Build and run a chat agent that has an AI model connected.</li>
+    <li>Run a workflow by hand for testing, then switch it on for real use.</li>
+  </ul>
+
+  <h2 id="vocab">The five words you need</h2>
+  <div class="callout analogy">
+    <span class="label">Everyday comparison: a factory assembly line</span>
+    A workflow is like an assembly line. Each station (node) does one job. Conveyor belts (connections) carry the item to the next station. Each time the line runs, that is one execution.
+  </div>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Word</th><th>Plain meaning</th><th>On the assembly line</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Node</strong></td><td>One step. It is either a <em>trigger</em> that starts the workflow, or an <em>action</em> that does something.</td><td>One station</td></tr>
+      <tr><td><strong>Connection</strong></td><td>The line between two nodes. It passes data along.</td><td>The conveyor belt</td></tr>
+      <tr><td><strong>Workflow</strong></td><td>A set of connected nodes that does a whole job.</td><td>The entire line</td></tr>
+      <tr><td><strong>Execution</strong></td><td>One run of a workflow, saved so you can look back at it.</td><td>One batch going down the line</td></tr>
+      <tr><td><strong>Template</strong></td><td>A ready-made workflow you can copy and adapt.</td><td>A recipe card</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>A <strong>trigger</strong> node answers the question &ldquo;what starts this?&rdquo; (a chat message, a schedule, an incoming web request). <strong>Action</strong> nodes answer &ldquo;what should happen next?&rdquo;</p>
+
+  <h2 id="setup">Getting set up</h2>
+  <ol class="steps">
+    <li>Create an account on <a href="https://n8n.io" target="_blank" rel="noopener">n8n.io</a> and start the free trial of n8n cloud. After the trial it is a monthly subscription.</li>
+    <li>Click <strong>Create workflow</strong>. You will see an empty canvas. Give the workflow a name such as &ldquo;My first agent&rdquo;.</li>
+    <li>Get an AI key. OpenAI needs a minimum balance. <strong>OpenRouter</strong> is a free-tier alternative, and it uses the same key idea you met in Lesson 1.</li>
+  </ol>
+  <div class="callout warn">
+    <span class="label">Keep your key private</span>
+    In n8n you paste keys into a <strong>credential</strong>, a safe box that n8n stores for you. Never paste a key into a prompt, a spreadsheet or a message.
+  </div>
+
+  <h2 id="build">Build the agent</h2>
+  <p>This is the whole workflow. Three boxes:</p>
+  <figure class="diagram">
+    <svg viewBox="0 0 650 230" role="img" aria-label="A chat trigger feeds an AI agent. A chat model plugs into the agent as its brain. Memory and tools are added in Lesson 7.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-ah"/></marker></defs>
+      <rect x="15" y="30" width="190" height="64" rx="10" class="dg-box"/><text x="110" y="56" text-anchor="middle" class="dg-t">Chat message</text><text x="110" y="76" text-anchor="middle" class="dg-s">trigger: starts the workflow</text>
+      <rect x="260" y="30" width="190" height="64" rx="10" class="dg-hot"/><text x="355" y="56" text-anchor="middle" class="dg-t">AI Agent</text><text x="355" y="76" text-anchor="middle" class="dg-s">decides and replies</text>
+      <text x="550" y="68" text-anchor="middle" class="dg-s">answer appears</text><text x="550" y="84" text-anchor="middle" class="dg-s">in the chat</text>
+      <path d="M205 62H257" class="dg-l" marker-end="url(#ah)"/><path d="M450 62H495" class="dg-l" marker-end="url(#ah)"/>
+      <rect x="265" y="155" width="180" height="50" rx="10" class="dg-box"/><text x="355" y="178" text-anchor="middle" class="dg-t">Chat model</text><text x="355" y="195" text-anchor="middle" class="dg-s">the brain (required)</text>
+      <path d="M355 155V97" class="dg-la" marker-end="url(#ah)"/>
+      <rect x="30" y="155" width="170" height="50" rx="10" class="dg-soft" stroke-dasharray="5 4"/><text x="115" y="184" text-anchor="middle" class="dg-s">Memory (Lesson 7)</text>
+      <rect x="480" y="155" width="150" height="50" rx="10" class="dg-soft" stroke-dasharray="5 4"/><text x="555" y="184" text-anchor="middle" class="dg-s">Tools (Lesson 7)</text>
+    </svg>
+    <figcaption>The first agent: one trigger, one agent, one model. Memory and tools come next lesson.</figcaption>
+  </figure>
+  <ol class="steps">
+    <li>Click the <strong>+</strong> on the canvas and add a chat trigger, often named <em>On chat message</em>.</li>
+    <li>Add an <strong>AI Agent</strong> node and connect it to the trigger.</li>
+    <li>On the AI Agent node, find the <strong>Chat Model</strong> slot at the bottom and click its <strong>+</strong>. Choose an OpenAI or OpenRouter chat model.</li>
+    <li>Create a <strong>credential</strong> with your key when asked, then pick a model name.</li>
+    <li>Open the AI Agent's options and add a <strong>System Message</strong>. This is the system prompt from Lesson 3.</li>
+  </ol>
+  <p>Here is a system message to try. You will replace the text in the middle each time.</p>
+  <div class="prompt"><span class="label">System message</span>You are a helpful assistant.
+Answer questions using ONLY the text below.
+If the answer is not in the text, say: "I can't find that in the text."
+Keep answers to two sentences.
+
+TEXT:
+(paste a short article, a menu, or a set of opening hours here)</div>
+
+  <h2 id="test">Test it</h2>
+  <ol class="steps">
+    <li>Click <strong>Open chat</strong> (or the chat button on the canvas) and ask a question about your text.</li>
+    <li>Ask something that is <strong>not</strong> in the text. A good agent should say it cannot find it.</li>
+    <li>Click <strong>Executions</strong> and open the latest run. Click each node to see what went in and what came out.</li>
+  </ol>
+  <p>Reading an execution is the most useful habit in n8n. When something goes wrong, the answer is nearly always visible there.</p>
+
+  <h2 id="active">Manual runs and live runs</h2>
+  <div class="cards">
+    <div class="card"><h3>Manual execution</h3><p>For <strong>testing</strong>. You press the button and watch it work on the canvas.</p></div>
+    <div class="card"><h3>Active execution</h3><p>For <strong>real use</strong>. After you turn the workflow on, it runs by itself whenever its trigger fires.</p></div>
+  </div>
+  <p>The button is called <strong>Active</strong> in some versions and <strong>Publish</strong> in newer ones. It does the same job. Always test by hand before switching on.</p>
+
+  <h2 id="costs">What does it cost?</h2>
+  <ul>
+    <li><strong>n8n cloud:</strong> a free trial, then a monthly subscription.</li>
+    <li><strong>OpenAI:</strong> needs a minimum balance in your account before the key works.</li>
+    <li><strong>OpenRouter:</strong> has free models with limits, which suits learning.</li>
+  </ul>
+
+  <h2 id="exercise">Your exercise</h2>
+  <p>Build a chat agent that answers questions about a <strong>short text you paste into its prompt</strong>. Run it, then open the execution view and read each step.</p>
+  <div class="checklist">
+    <label class="check"><input type="checkbox" data-check="build"> Workflow has a chat trigger, an AI Agent and a chat model</label>
+    <label class="check"><input type="checkbox" data-check="prompt"> System message includes my text and the &ldquo;only use this text&rdquo; rule</label>
+    <label class="check"><input type="checkbox" data-check="inscope"> Three in-text questions answered correctly</label>
+    <label class="check"><input type="checkbox" data-check="outscope"> One out-of-text question was politely declined</label>
+    <label class="check"><input type="checkbox" data-check="exec"> I opened the execution and can name what each node received and returned</label>
+  </div>
+
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th></tr></thead>
+    <tbody>
+      <tr><td>The agent node shows an error about a missing model</td><td>No chat model is attached. Click the Chat Model <strong>+</strong> on the agent.</td></tr>
+      <tr><td>Credential errors or 401</td><td>The key is wrong, or the provider has no balance. Re-create the credential.</td></tr>
+      <tr><td>The chat window shows nothing</td><td>Save the workflow, then open the chat again.</td></tr>
+      <tr><td>It answers things that are not in the text</td><td>Make the rule stronger and add an example of the refusal.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="quiz">Quick quiz</h2>
+  <p>Click an answer. You will see right away if it was correct, and why.</p>
+  <div id="quiz-box">
+    <div class="q">
+      <p class="question">1. What is a node in n8n?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>One step in a workflow, either a trigger or an action</button>
+        <button type="button" class="opt">The password for your n8n account</button>
+        <button type="button" class="opt">A saved chat conversation</button>
+      </div>
+      <p class="why">Nodes are the boxes. Connected together, they make a workflow.</p>
+    </div>
+    <div class="q">
+      <p class="question">2. What does a connection do?</p>
+      <div class="opts">
+        <button type="button" class="opt">Connects n8n to the internet cable</button>
+        <button type="button" class="opt" data-correct>Passes data from one node to the next</button>
+        <button type="button" class="opt">Saves the workflow</button>
+      </div>
+      <p class="why">Connections are the conveyor belts between stations.</p>
+    </div>
+    <div class="q">
+      <p class="question">3. What is the difference between a manual and an active execution?</p>
+      <div class="opts">
+        <button type="button" class="opt">Manual is for experts, active is for beginners</button>
+        <button type="button" class="opt">There is no difference</button>
+        <button type="button" class="opt" data-correct>Manual is for testing, active runs for real when the trigger fires</button>
+      </div>
+      <p class="why">Always test manually first, then switch the workflow on.</p>
+    </div>
+    <div class="q">
+      <p class="question">4. Where do you look to see what each node received and returned in a past run?</p>
+      <div class="opts">
+        <button type="button" class="opt" data-correct>The execution view</button>
+        <button type="button" class="opt">The settings page</button>
+        <button type="button" class="opt">The template library</button>
+      </div>
+      <p class="why">Executions save every run, node by node.</p>
+    </div>
+    <div class="q">
+      <p class="question">5. Which provider is a free-tier alternative when OpenAI needs a minimum balance?</p>
+      <div class="opts">
+        <button type="button" class="opt">Gmail</button>
+        <button type="button" class="opt" data-correct>OpenRouter</button>
+        <button type="button" class="opt">Google Sheets</button>
+      </div>
+      <p class="why">OpenRouter offers some free models, with limits, using the same key idea.</p>
+    </div>
+    <p class="score" id="score" role="status" aria-live="polite"></p>
+    <button type="button" class="secondary" id="quiz-reset">Start the quiz again</button>
+  </div>
+
+  <h2 id="glossary">Glossary</h2>
+  <dl class="glossary">
+    <dt>n8n</dt><dd>A tool for building automations by connecting boxes (nodes) on a canvas.</dd>
+    <dt>Node</dt><dd>One step in a workflow. Either a trigger or an action.</dd>
+    <dt>Trigger</dt><dd>A node that starts a workflow, such as a chat message or a schedule.</dd>
+    <dt>Action</dt><dd>A node that does something after the trigger, such as call an AI or send an email.</dd>
+    <dt>Connection</dt><dd>The line between two nodes that passes data along.</dd>
+    <dt>Workflow</dt><dd>A set of connected nodes that does a whole job.</dd>
+    <dt>Execution</dt><dd>One run of a workflow, saved so you can inspect it.</dd>
+    <dt>Template</dt><dd>A ready-made workflow you can copy and change.</dd>
+    <dt>Credential</dt><dd>A safe place inside n8n where a key or login is stored.</dd>
+    <dt>Active (or Publish)</dt><dd>Switching a workflow on so it runs by itself in real use.</dd>
+  </dl>
+
+  <h2 id="recap">Recap and what comes next</h2>
+  <ol class="steps">
+    <li>n8n builds automations from connected boxes: nodes joined by connections make a workflow.</li>
+    <li>A chat agent needs three things: a trigger, an AI Agent node and a chat model.</li>
+    <li>Test by hand, read the execution, and only then switch the workflow on.</li>
+  </ol>
+  <p><strong>Next:</strong> Lesson 7, Agentic AI in n8n: give your agent tools and memory, and learn why treating the AI like a person leads to weak designs.</p>
+
+  <div class="pager">
+    <a class="btn secondary" href="lesson-5.html">&larr; Lesson 5</a>
+    <button type="button" class="secondary mid-btn" data-done="6">Mark this lesson as done</button>
+    <a class="btn" href="lesson-7.html">Lesson 7 &rarr;</a>
+  </div>
+</article>
+</main>
+
+</div>
+</div>
+
+<div class="footer">Agentic AI Builder notes. Button names and menus in online tools change from time to time; if you see something different, look for the same idea.</div>
+<script src="../assets/app.js"></script>
+<script src="../assets/widgets.js"></script>
+</body>
+</html>
